@@ -7,6 +7,8 @@ import hua.lee.plm.type.CommandType;
 import hua.lee.plm.type.ParamType;
 import hua.lee.plm.type.ResultType;
 
+import java.util.Arrays;
+
 /**
  * 发送指令类
  *
@@ -22,6 +24,13 @@ public class SenderCommand extends Command implements ICommandWorker {
         mParamType = builder.mParamType;
         mResultType = builder.mResultType;
         mCommandType = builder.mCommandType;
+
+        setCMD_ID(mCommandID);
+        if (mCommandParam!=null){
+            dataContent = mCommandParam.getBytes();
+            System.out.println("set data content :: " + Arrays.toString(dataContent));
+            dataLen = dataContent.length;
+        }
     }
 
     @Override
@@ -30,9 +39,34 @@ public class SenderCommand extends Command implements ICommandWorker {
         return true;
     }
 
+    @Override
+    public int[] transToByte() {
+        int[] frame = new int[getFrameLen()];
+        frame[0] = FRAME_HEAD;
+        frame[1] = frameType;
+        frame[2] = frameCMD_ID[0];
+        frame[3] = frameCMD_ID[1];
+        frame[4] = dataLen;
+        for (byte i = 0; i < dataLen; i++) { ;
+            frame[5+i] = dataContent[i];
+            System.out.println("package data content :: " +dataContent[i]);
+        }
+        int frameTailPos = getFrameLen()-1;
+        int crcPos = getFrameLen()-2;
+        int frameSumPos = getFrameLen()-3;
+        int frameNoPos = getFrameLen()-4;
+        frame[frameNoPos] = frameNo;
+        frame[frameSumPos] = frameSum;
+        frame[crcPos] = calCRC();
+        frame[frameTailPos] = FRAME_TAIL;
+        return frame;
+    }
+
+    public static void main(String[] args) {
+    }
 
     public static final class Builder {
-        private int mCommandID;
+        private String mCommandID;
         private String mCommandDesc;
         private String mCommandParam;
         private ParamType mParamType;
@@ -42,7 +76,7 @@ public class SenderCommand extends Command implements ICommandWorker {
         public Builder() {
         }
 
-        public Builder mCommandID(int val) {
+        public Builder mCommandID(String val) {
             mCommandID = val;
             return this;
         }
