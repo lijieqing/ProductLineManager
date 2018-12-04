@@ -4,7 +4,8 @@ public enum CommandType {
     /**
      * 发送指令、系统休眠指令
      */
-    Send(1, "send cmd type"), Sleep(2, "sleep cmd type");
+    Send(0, "send cmd type"), Sleep(1, "sleep cmd type"),
+    ACK(2,"ACK"),NACK(3,"NACK");
     private int value;
     private String desc;
 

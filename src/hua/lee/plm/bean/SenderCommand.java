@@ -26,10 +26,21 @@ public class SenderCommand extends Command implements ICommandWorker {
         mCommandType = builder.mCommandType;
 
         setCMD_ID(mCommandID);
-        if (mCommandParam!=null){
+        if (mCommandParam != null) {
             dataContent = mCommandParam.getBytes();
             System.out.println("set data content :: " + Arrays.toString(dataContent));
             dataLen = dataContent.length;
+        }
+        switch (mCommandType){
+            case Send:
+                frameType = NORMAL_TYPE;
+                break;
+            case ACK:
+                frameType = ACK_TYPE;
+                break;
+            case NACK:
+                frameType = NACK_TYPE;
+                break;
         }
     }
 
@@ -40,25 +51,25 @@ public class SenderCommand extends Command implements ICommandWorker {
     }
 
     @Override
-    public int[] transToByte() {
-        int[] frame = new int[getFrameLen()];
+    public byte[] transToByte() {
+        byte[] frame = new byte[getFrameLen()];
         frame[0] = FRAME_HEAD;
         frame[1] = frameType;
-        frame[2] = frameCMD_ID[0];
-        frame[3] = frameCMD_ID[1];
-        frame[4] = dataLen;
-        for (byte i = 0; i < dataLen; i++) { ;
-            frame[5+i] = dataContent[i];
-            System.out.println("package data content :: " +dataContent[i]);
+        frame[2] = (byte)frameCMD_ID[0];
+        frame[3] = (byte)frameCMD_ID[1];
+        frame[4] = (byte)dataLen;
+        for (byte i = 0; i < dataLen; i++) {
+            frame[5 + i] = dataContent[i];
+            System.out.println("package data content :: " + dataContent[i]);
         }
-        int frameTailPos = getFrameLen()-1;
-        int crcPos = getFrameLen()-2;
-        int frameSumPos = getFrameLen()-3;
-        int frameNoPos = getFrameLen()-4;
-        frame[frameNoPos] = frameNo;
-        frame[frameSumPos] = frameSum;
-        frame[crcPos] = calCRC();
-        frame[frameTailPos] = FRAME_TAIL;
+        int frameTailPos = getFrameLen() - 1;
+        int crcPos = getFrameLen() - 2;
+        int frameSumPos = getFrameLen() - 3;
+        int frameNoPos = getFrameLen() - 4;
+        frame[frameNoPos] = (byte)frameNo;
+        frame[frameSumPos] = (byte)frameSum;
+        frame[crcPos] = (byte) calCRC(frame);
+        frame[frameTailPos] = (byte)FRAME_TAIL;
         return frame;
     }
 

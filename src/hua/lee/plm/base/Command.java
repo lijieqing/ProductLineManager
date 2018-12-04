@@ -11,20 +11,20 @@ import hua.lee.plm.type.ResultType;
  * @create 2018-10-30 14:52
  **/
 public abstract class Command {
-    protected static final int FRAME_HEAD = 0x79;
-    protected static final int FRAME_TAIL = 0xFE;
+    public static final int FRAME_HEAD = 0x79;
+    public static final int FRAME_TAIL = 0xFE;
     /**
      * 普通帧类型
      */
-    private static final int NORMAL_TYPE = 0x00;
+    protected static final int NORMAL_TYPE = 0x00;
     /**
      * ACK帧类型
      */
-    private static final int ACK_TYPE = 0x10;
+    protected static final int ACK_TYPE = 0x10;
     /**
      * NACK帧类型
      */
-    private static final int NACK_TYPE = 0x20;
+    protected static final int NACK_TYPE = 0x20;
     /**
      * 指令 ID
      */
@@ -84,7 +84,7 @@ public abstract class Command {
      *
      * @return crc
      */
-    protected int calCRC() {
+    protected int calCRC(byte[] originFrame) {
         int sum = frameType + frameCMD_ID[0] + frameCMD_ID[1] + dataLen;
 
         for (byte data : dataContent) {
@@ -127,12 +127,19 @@ public abstract class Command {
         frameCMD_ID[1] = r;
     }
 
-    public abstract int[] transToByte();
+    public abstract byte[] transToByte();
 
 
     public Command() {
         System.out.println(" command ");
     }
 
+    public String getCommandID() {
+        return mCommandID;
+    }
+
+    public CommandType getCommandType() {
+        return mCommandType;
+    }
 
 }
