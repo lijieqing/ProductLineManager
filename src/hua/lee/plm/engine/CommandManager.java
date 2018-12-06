@@ -1,5 +1,7 @@
 package hua.lee.plm.engine;
 
+import com.sun.istack.internal.NotNull;
+import hua.lee.plm.base.DataReceivedCallback;
 import hua.lee.plm.base.ICommandWorker;
 import hua.lee.plm.base.ICommunicate;
 import hua.lee.plm.bean.SenderCommand;
@@ -46,6 +48,12 @@ public class CommandManager {
             pass = worker.worker(comm);
 
             cmdList.remove(pos);
+
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
         running = false;
     }
@@ -77,6 +85,10 @@ public class CommandManager {
                 }
             }, 200, 200);
         }
+    }
+
+    public void addDataReceivedListener(@NotNull DataReceivedCallback callback){
+        comm.addReceivedCallback(callback);
     }
 
     public boolean isWatching() {

@@ -1,5 +1,8 @@
 package hua.lee.plm.vo;
 
+import hua.lee.plm.type.CommandType;
+import hua.lee.plm.type.ParamType;
+import hua.lee.plm.type.ResultType;
 import lee.hua.xmlparse.annotation.XmlAttribute;
 import lee.hua.xmlparse.annotation.XmlBean;
 
@@ -31,6 +34,11 @@ public class CommandVO {
      */
     @XmlAttribute(name = "ResultType")
     private String mResultType;
+    /**
+     * 通讯间隔，单位 s
+     */
+    @XmlAttribute(name = "CommandPeriod")
+    private Integer mPeriod;
 
     public String getCmd_ID() {
         return cmd_ID;
@@ -40,37 +48,72 @@ public class CommandVO {
         this.cmd_ID = cmd_ID;
     }
 
-    public String getCmd_Type() {
-        return cmd_Type;
+    public CommandType getCmdType() {
+        switch (cmd_Type) {
+            case "SEND":
+                return CommandType.Send;
+            case "SLEEP":
+                return CommandType.Sleep;
+            default:
+                return CommandType.Send;
+        }
     }
 
     public void setCmd_Type(String cmd_Type) {
         this.cmd_Type = cmd_Type;
     }
 
-    public String getmParamType() {
-        return mParamType;
+    public ParamType getParamType() {
+        switch (mParamType) {
+            case "HEX":
+                return ParamType.HEX;
+            case "ASCII":
+                return ParamType.String;
+            default:
+                return ParamType.VOID;
+        }
     }
 
     public void setmParamType(String mParamType) {
         this.mParamType = mParamType;
     }
 
-    public String getmResultType() {
-        return mResultType;
+    public ResultType getResultType() {
+        switch (mResultType) {
+            case "HEX":
+                return ResultType.HEX;
+            case "ASCII":
+                return ResultType.String;
+            default:
+                return ResultType.VOID;
+        }
     }
 
     public void setmResultType(String mResultType) {
         this.mResultType = mResultType;
     }
 
+    /**
+     * 获取命令通讯间隔
+     *
+     * @return second
+     */
+    public Integer getPeriod() {
+        return mPeriod;
+    }
+
+    public void setmPeriod(Integer mPeriod) {
+        this.mPeriod = mPeriod;
+    }
+
     @Override
     public String toString() {
         return "CommandVO{" +
                 "cmd_ID='" + cmd_ID + '\'' +
-                ", cmd_Type=" + cmd_Type +
+                ", cmd_Type='" + cmd_Type + '\'' +
                 ", mParamType='" + mParamType + '\'' +
                 ", mResultType='" + mResultType + '\'' +
+                ", mPeriod=" + mPeriod +
                 '}';
     }
 }

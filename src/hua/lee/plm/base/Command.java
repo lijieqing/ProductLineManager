@@ -3,6 +3,7 @@ package hua.lee.plm.base;
 import hua.lee.plm.type.CommandType;
 import hua.lee.plm.type.ParamType;
 import hua.lee.plm.type.ResultType;
+import hua.lee.plm.vo.CommandVO;
 
 /**
  * 指令基础类
@@ -79,26 +80,7 @@ public abstract class Command {
      */
     protected int frameSum = 0x01;
 
-    /**
-     * 计算 CRC 校验值
-     *
-     * @return crc
-     */
-    protected int calCRC(byte[] originFrame) {
-        int sum = frameType + frameCMD_ID[0] + frameCMD_ID[1] + dataLen;
-
-        for (byte data : dataContent) {
-            sum += data;
-        }
-        sum += frameNo;
-        sum += frameSum;
-
-        if (sum > 0x100) {
-            sum = sum % 0x100;
-        }
-
-        return (0x100 - sum);
-    }
+    private CommandVO vo;
 
     /**
      * 获取帧长度
@@ -131,7 +113,7 @@ public abstract class Command {
 
 
     public Command() {
-        System.out.println(" command ");
+        //System.out.println(" command ");
     }
 
     public String getCommandID() {
@@ -141,5 +123,18 @@ public abstract class Command {
     public CommandType getCommandType() {
         return mCommandType;
     }
+    public void setCommandVO(CommandVO vo){
+        if (vo==null) {
+            return;
+        }
+        this.vo = vo;
+        mCommandID = vo.getCmd_ID();
+        mCommandType = vo.getCmdType();
+        mParamType = vo.getParamType();
+        mResultType = vo.getResultType();
+    }
 
+    public String getCommandResult() {
+        return mCommandResult;
+    }
 }

@@ -1,15 +1,17 @@
 package hua.lee.plm.engine;
 
+import com.sun.istack.internal.NotNull;
 import gnu.io.*;
 import hua.lee.plm.base.Command;
+import hua.lee.plm.base.DataReceivedCallback;
 import hua.lee.plm.base.ICommunicate;
-import hua.lee.plm.bean.ReceivedCommand;
-import hua.lee.plm.type.CommandType;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.*;
+
+import static hua.lee.plm.engine.CommandFactory.*;
 
 /**
  * 通讯引擎
@@ -21,6 +23,7 @@ public class CommunicateEngine implements ICommunicate {
     private static SerialPort port = null;
     private static OutputStream output;
     private static InputStream input;
+    private static List<DataReceivedCallback> receivedCallbackList = new ArrayList<>();
 
     public CommunicateEngine() {
         initPort();
@@ -60,6 +63,19 @@ public class CommunicateEngine implements ICommunicate {
                 }
                 break;
             }
+        }
+    }
+
+    @Override
+    public  void addReceivedCallback(@NotNull DataReceivedCallback callback) {
+        if (!receivedCallbackList.contains(callback)) {
+            receivedCallbackList.add(callback);
+        }
+    }
+
+    private static void notifyAll(byte[] data) {
+        for (DataReceivedCallback callback : receivedCallbackList) {
+            callback.onReceived(data);
         }
     }
 
@@ -163,8 +179,6 @@ public class CommunicateEngine implements ICommunicate {
      */
     private static class CommandParser {
         static byte[] recData;
-        static ReceivedCommand recCmd;
-        static List<ReceivedCommand> recList = new ArrayList<>();
 
         private static void parse(byte[] data) {
             System.out.println("parse:: " + Arrays.toString(data));
@@ -177,21 +191,17 @@ public class CommunicateEngine implements ICommunicate {
                         //创建填充数据接收区域
                         recData = new byte[frameLen];
                         System.arraycopy(data, i, recData, 0, frameLen);
-                        //转换为接收指令对象
-                        recCmd = new ReceivedCommand(recData);
-                        //当收到数据帧时，回复 ACK
-                        if (recCmd.getCommandType() == CommandType.Send) {
-                            new Thread(new SerialWriter(output, recCmd.generateACKCMD())).start();
-                        } else {
-                            recList.add(recCmd);
+                        //System.out.println("origin frame ::: " + Arrays.toString(recData));
+                        if (recData[1] == DATA_TYPE && recData[frameLen-3]==1) {
+                            //System.out.println("origin rec data ::: " + Arrays.toString(recData));
+                            new Thread(new SerialWriter(output, generateACKCMD(recData[2], recData[3]))).start();
+                            CommunicateEngine.notifyAll(recData);
                         }
-                        System.out.println("rec List ====>" + recList.size());
                     }
-                    i += frameLen;
+                    //跳到帧尾部
+                    i += frameLen - 1;
                 }
             }
-
-
         }
     }
 

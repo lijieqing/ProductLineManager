@@ -1,5 +1,7 @@
 package hua.lee.plm.base;
 
+import hua.lee.plm.engine.CommunicateEngine;
+
 /**
  * 通讯接口
  *
@@ -19,4 +21,6 @@ public interface ICommunicate {
      * 关闭串口
      */
     void closePort();
+
+    void addReceivedCallback(DataReceivedCallback callback);
 }

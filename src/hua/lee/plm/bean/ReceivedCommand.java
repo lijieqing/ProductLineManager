@@ -3,7 +3,8 @@ package hua.lee.plm.bean;
 import hua.lee.plm.base.Command;
 import hua.lee.plm.type.CommandType;
 
-import java.util.Arrays;
+import static hua.lee.plm.engine.CommandFactory.calCRC;
+import static hua.lee.plm.engine.CommandFactory.getCommadVO;
 
 /**
  * 命令帧接收对象
@@ -16,7 +17,7 @@ public class ReceivedCommand extends Command {
 
     public ReceivedCommand(byte[] originFrame) {
         this.originFrame = originFrame;
-        if (calCRC(originFrame) != originFrame[originFrame.length - 2]) {
+        if ((byte) calCRC(originFrame) != originFrame[originFrame.length - 2]) {
             System.out.println("帧解析错误，CRC is not correct calCRC=" + calCRC(originFrame) + "||| frameCRC=" + originFrame[originFrame.length - 2]);
         }
         frameToCommand();
@@ -26,16 +27,21 @@ public class ReceivedCommand extends Command {
      * 字节数据转换为 Command 对象信息
      */
     private void frameToCommand() {
-        System.out.println("frameToCommand -> received data :: " + Arrays.toString(originFrame));
-        String l = Integer.toHexString(originFrame[2]);
-        String r = Integer.toHexString(originFrame[3]);
+        //解析 CMD ID
+        String l = Integer.toHexString(originFrame[2] & 0xff);
+        String r = Integer.toHexString(originFrame[3] & 0xff);
         mCommandID = l + r;
+        //获取指令返回数据类型
+        System.out.println(mCommandID);
+        mResultType = getCommadVO(mCommandID).getResultType();
+        //解析返回数据
         StringBuilder param = new StringBuilder();
         int dataLen = originFrame[4];
         for (int i = 5; i < 5 + dataLen; i++) {
             param.append(Integer.toHexString(originFrame[i]));
         }
         mCommandParam = param.toString();
+        //根据不同返回值类型进行转码
         byte cmdtype = originFrame[1];
         switch (cmdtype) {
             case NORMAL_TYPE:
@@ -48,20 +54,27 @@ public class ReceivedCommand extends Command {
                 mCommandType = CommandType.NACK;
                 break;
         }
-    }
-
-    @Override
-    protected int calCRC(byte[] originFrame) {
-        int sum = 0;
-        for (int i = 0; i < originFrame.length; i++) {
-            if (i > 0 && i < originFrame.length - 2) {
-                sum += (originFrame[i] & 0xff);
+        if (originFrame[4] > 0) {
+            byte[] data = new byte[dataLen];
+            System.arraycopy(originFrame, 5, data, 0, dataLen);
+            switch (mResultType) {
+                case HEX:
+                    StringBuilder sb = new StringBuilder();
+                    for (byte b : data) {
+                        sb.append(Integer.toHexString(b & 0xff));
+                    }
+                    mCommandResult = sb.toString();
+                    break;
+                case String:
+                    mCommandResult = new String(data);
+                    break;
+                case VOID:
+                    break;
             }
+            System.out.println("received param ====> " + mCommandResult);
+        } else {
+            System.out.println("no data");
         }
-        if (sum > 0x100) {
-            sum = sum % 0x100;
-        }
-        return 0x100 - sum;
     }
 
     @Override

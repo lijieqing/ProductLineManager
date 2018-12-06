@@ -3,9 +3,8 @@ package hua.lee.plm.bean;
 import hua.lee.plm.base.Command;
 import hua.lee.plm.base.ICommandWorker;
 import hua.lee.plm.base.ICommunicate;
-import hua.lee.plm.type.CommandType;
-import hua.lee.plm.type.ParamType;
-import hua.lee.plm.type.ResultType;
+import hua.lee.plm.engine.CommandFactory;
+import hua.lee.plm.vo.CommandVO;
 
 import java.util.Arrays;
 
@@ -17,21 +16,31 @@ import java.util.Arrays;
  **/
 public class SenderCommand extends Command implements ICommandWorker {
 
-    private SenderCommand(Builder builder) {
-        mCommandID = builder.mCommandID;
-        mCommandDesc = builder.mCommandDesc;
-        mCommandParam = builder.mCommandParam;
-        mParamType = builder.mParamType;
-        mResultType = builder.mResultType;
-        mCommandType = builder.mCommandType;
-
+    public SenderCommand(CommandVO vo) {
+        setCommandVO(vo);
         setCMD_ID(mCommandID);
         if (mCommandParam != null) {
-            dataContent = mCommandParam.getBytes();
+            switch (mParamType) {
+                case String:
+                    dataContent = mCommandParam.getBytes();
+                    dataLen = dataContent.length;
+                    break;
+                case HEX:
+                    if (mCommandParam.length() % 2 != 0) {
+                        System.out.println("数据帧参数异常 ：：：hex param must be an even number==>" + mCommandParam);
+                    } else {
+                        dataLen = mCommandParam.length() / 2;
+                        dataContent = new byte[dataLen];
+                        for (int i = 0; i < dataLen; i++) {
+                            String val = "" + mCommandParam.charAt(i) + mCommandParam.charAt(i + 1);
+                            dataContent[i] = (byte) Integer.parseInt(val, 16);
+                        }
+                    }
+                    break;
+            }
             System.out.println("set data content :: " + Arrays.toString(dataContent));
-            dataLen = dataContent.length;
         }
-        switch (mCommandType){
+        switch (mCommandType) {
             case Send:
                 frameType = NORMAL_TYPE;
                 break;
@@ -55,9 +64,9 @@ public class SenderCommand extends Command implements ICommandWorker {
         byte[] frame = new byte[getFrameLen()];
         frame[0] = FRAME_HEAD;
         frame[1] = frameType;
-        frame[2] = (byte)frameCMD_ID[0];
-        frame[3] = (byte)frameCMD_ID[1];
-        frame[4] = (byte)dataLen;
+        frame[2] = (byte) frameCMD_ID[0];
+        frame[3] = (byte) frameCMD_ID[1];
+        frame[4] = (byte) dataLen;
         for (byte i = 0; i < dataLen; i++) {
             frame[5 + i] = dataContent[i];
             System.out.println("package data content :: " + dataContent[i]);
@@ -66,59 +75,10 @@ public class SenderCommand extends Command implements ICommandWorker {
         int crcPos = getFrameLen() - 2;
         int frameSumPos = getFrameLen() - 3;
         int frameNoPos = getFrameLen() - 4;
-        frame[frameNoPos] = (byte)frameNo;
-        frame[frameSumPos] = (byte)frameSum;
-        frame[crcPos] = (byte) calCRC(frame);
-        frame[frameTailPos] = (byte)FRAME_TAIL;
+        frame[frameNoPos] = (byte) frameNo;
+        frame[frameSumPos] = (byte) frameSum;
+        frame[crcPos] = (byte) CommandFactory.calCRC(frame);
+        frame[frameTailPos] = (byte) FRAME_TAIL;
         return frame;
-    }
-
-    public static void main(String[] args) {
-    }
-
-    public static final class Builder {
-        private String mCommandID;
-        private String mCommandDesc;
-        private String mCommandParam;
-        private ParamType mParamType;
-        private ResultType mResultType;
-        private CommandType mCommandType;
-
-        public Builder() {
-        }
-
-        public Builder mCommandID(String val) {
-            mCommandID = val;
-            return this;
-        }
-
-        public Builder mCommandDesc(String val) {
-            mCommandDesc = val;
-            return this;
-        }
-
-        public Builder mCommandParam(String val) {
-            mCommandParam = val;
-            return this;
-        }
-
-        public Builder mParamType(ParamType val) {
-            mParamType = val;
-            return this;
-        }
-
-        public Builder mResultType(ResultType val) {
-            mResultType = val;
-            return this;
-        }
-
-        public Builder mCommandType(CommandType val) {
-            mCommandType = val;
-            return this;
-        }
-
-        public SenderCommand build() {
-            return new SenderCommand(this);
-        }
     }
 }
