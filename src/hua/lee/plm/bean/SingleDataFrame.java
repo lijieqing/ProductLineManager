@@ -12,14 +12,11 @@ import static hua.lee.plm.engine.CommandFactory.getCommadVO;
  * @author lijie
  * @create 2018-12-04 10:02
  **/
-public class ReceivedCommand extends Command {
+public class SingleDataFrame extends Command {
     private byte[] originFrame;
 
-    public ReceivedCommand(byte[] originFrame) {
+    public SingleDataFrame(byte[] originFrame) {
         this.originFrame = originFrame;
-        if ((byte) calCRC(originFrame) != originFrame[originFrame.length - 2]) {
-            System.out.println("帧解析错误，CRC is not correct calCRC=" + calCRC(originFrame) + "||| frameCRC=" + originFrame[originFrame.length - 2]);
-        }
         frameToCommand();
     }
 
@@ -32,7 +29,6 @@ public class ReceivedCommand extends Command {
         String r = Integer.toHexString(originFrame[3] & 0xff);
         mCommandID = l + r;
         //获取指令返回数据类型
-        System.out.println(mCommandID);
         mResultType = getCommadVO(mCommandID).getResultType();
         //解析返回数据
         StringBuilder param = new StringBuilder();
@@ -80,19 +76,5 @@ public class ReceivedCommand extends Command {
     @Override
     public byte[] transToByte() {
         return originFrame;
-    }
-
-    public byte[] generateACKCMD() {
-        byte[] ack = new byte[9];
-        ack[0] = (byte) FRAME_HEAD;
-        ack[1] = ACK_TYPE;
-        ack[2] = originFrame[2];
-        ack[3] = originFrame[3];
-        ack[4] = 0x00;
-        ack[5] = 0x00;
-        ack[6] = 0x01;
-        ack[7] = (byte) calCRC(ack);
-        ack[8] = (byte) FRAME_TAIL;
-        return ack;
     }
 }

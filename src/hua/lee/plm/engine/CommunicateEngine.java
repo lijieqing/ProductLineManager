@@ -67,15 +67,21 @@ public class CommunicateEngine implements ICommunicate {
     }
 
     @Override
-    public  void addReceivedCallback(@NotNull DataReceivedCallback callback) {
+    public void addReceivedCallback(@NotNull DataReceivedCallback callback) {
         if (!receivedCallbackList.contains(callback)) {
             receivedCallbackList.add(callback);
         }
     }
 
-    private static void notifyAll(byte[] data) {
+    private static void notifyAll(byte[] singleData, byte[] multiData) {
+        System.out.println("Communicate ==> notifyAll");
         for (DataReceivedCallback callback : receivedCallbackList) {
-            callback.onReceived(data);
+            if (singleData != null) {
+                callback.onSingleDataReceived(singleData);
+            }
+            if (multiData != null) {
+                callback.onMultiDataReceived(multiData);
+            }
         }
     }
 
@@ -117,7 +123,11 @@ public class CommunicateEngine implements ICommunicate {
         System.out.println(" usb ttl send cmd start ");
         byte[] data_byte = cmd.transToByte();
         new Thread(new SerialWriter(output, data_byte)).start();
-
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         System.out.println(" usb ttl send cmd finish ");
     }
 
@@ -134,7 +144,7 @@ public class CommunicateEngine implements ICommunicate {
 
         @Override
         public void serialEvent(SerialPortEvent serialPortEvent) {
-            byte[] buffer = new byte[128];
+            byte[] buffer = new byte[1024];
             try {
                 Thread.sleep(500);
                 int l = ins.available();
@@ -178,7 +188,9 @@ public class CommunicateEngine implements ICommunicate {
      * 命令解析类
      */
     private static class CommandParser {
-        static byte[] recData;
+        static byte[] multiData;
+        static byte last_left_CmdID;
+        static byte last_right_CmdID;
 
         private static void parse(byte[] data) {
             System.out.println("parse:: " + Arrays.toString(data));
@@ -189,13 +201,44 @@ public class CommunicateEngine implements ICommunicate {
                     //判断尾部位置
                     if (data[i + frameLen - 1] == (byte) Command.FRAME_TAIL) {
                         //创建填充数据接收区域
-                        recData = new byte[frameLen];
+                        byte[] recData = new byte[frameLen];
                         System.arraycopy(data, i, recData, 0, frameLen);
-                        //System.out.println("origin frame ::: " + Arrays.toString(recData));
-                        if (recData[1] == DATA_TYPE && recData[frameLen-3]==1) {
+                        //如果是单数据帧，且 CRC 校验正确
+                        if (recData[1] == DATA_TYPE && recData[frameLen - 3] == 1
+                                && (byte) calCRC(recData) == recData[frameLen - 2]) {
                             //System.out.println("origin rec data ::: " + Arrays.toString(recData));
                             new Thread(new SerialWriter(output, generateACKCMD(recData[2], recData[3]))).start();
-                            CommunicateEngine.notifyAll(recData);
+                            CommunicateEngine.notifyAll(recData, null);
+                        } else if (recData[1] == DATA_TYPE && recData[frameLen - 3] > 1) {
+                            System.out.println("multi rec data ::: " + Arrays.toString(recData));
+                            //指令 ID 不一致，但是数据帧帧序号为0，开始接收
+                            if ((last_left_CmdID != recData[2] || last_right_CmdID != recData[3])
+                                    && recData[frameLen - 4] == 0 && (byte) calCRC(recData) == recData[frameLen - 2]) {
+                                multiData = new byte[0];
+                                last_left_CmdID = recData[2];
+                                last_right_CmdID = recData[3];
+                            }
+                            //帧命令 ID 与上次接收一致，则继续累加
+                            if (last_left_CmdID == recData[2] && last_right_CmdID == recData[3]
+                                    && (byte) calCRC(recData) == recData[frameLen - 2]) {
+                                //数组扩展
+                                multiData = Arrays.copyOf(multiData, multiData.length + recData[4]);
+                                //计算数组拷贝起始位置，并开始拷贝
+                                int startPos = multiData.length - recData[4];
+                                System.arraycopy(recData, 5, multiData, startPos, recData[4]);
+                                //当判断为最后一帧数据时，通知回调数据接收完成
+                                if ((recData[frameLen - 4] + 1) == recData[frameLen - 3]) {
+                                    System.out.println(multiData.length + " <==::::==> " + Arrays.toString(multiData));
+                                    byte[] result = new byte[multiData.length + 2];
+                                    result[0] = last_left_CmdID;
+                                    result[1] = last_right_CmdID;
+                                    last_left_CmdID = -1;
+                                    last_right_CmdID = -1;
+
+                                    System.arraycopy(multiData, 0, result, 2, multiData.length);
+                                    CommunicateEngine.notifyAll(null, result);
+                                }
+                            }
                         }
                     }
                     //跳到帧尾部

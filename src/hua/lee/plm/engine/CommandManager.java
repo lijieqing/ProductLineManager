@@ -4,7 +4,7 @@ import com.sun.istack.internal.NotNull;
 import hua.lee.plm.base.DataReceivedCallback;
 import hua.lee.plm.base.ICommandWorker;
 import hua.lee.plm.base.ICommunicate;
-import hua.lee.plm.bean.SenderCommand;
+import hua.lee.plm.bean.RequestCommand;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,11 +21,11 @@ public class CommandManager {
     /**
      * 发送区域命令集合
      */
-    private List<SenderCommand> cmdList = new ArrayList<>();
+    private List<RequestCommand> cmdList = new ArrayList<>();
     /**
      * 通讯异常命令集合
      */
-    private List<SenderCommand> errcmdList = new ArrayList<>();
+    private List<RequestCommand> errcmdList = new ArrayList<>();
     /**
      * 通讯引擎类
      */
@@ -63,7 +63,7 @@ public class CommandManager {
      *
      * @param cmd
      */
-    public void addCmdToSendPool(SenderCommand cmd) {
+    public void addCmdToSendPool(RequestCommand cmd) {
         cmdList.add(cmd);
     }
 

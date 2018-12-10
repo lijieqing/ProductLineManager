@@ -33,7 +33,7 @@ public final class CommandFactory {
         XMLAPI.setXmlBeanScanPackage("hua.lee.plm");
         CommandListVO res = (CommandListVO) XMLAPI.readXML(new FileInputStream(filePath));
         for (CommandVO commandVO : res.getCommandList()) {
-            cmdMap.put(commandVO.getCmd_ID(), commandVO);
+            cmdMap.put(commandVO.getCmd_ID().toUpperCase(), commandVO);
         }
         return res;
     }

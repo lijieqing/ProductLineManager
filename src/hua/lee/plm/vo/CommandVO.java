@@ -25,6 +25,11 @@ public class CommandVO {
     @XmlAttribute(name = "CommandType")
     private String cmd_Type;
     /**
+     * 指令携带参数
+     */
+    @XmlAttribute(name = "CommandParam")
+    private String cmd_Param;
+    /**
      * 指令参数类型
      */
     @XmlAttribute(name = "ParamType")
@@ -104,6 +109,14 @@ public class CommandVO {
 
     public void setmPeriod(Integer mPeriod) {
         this.mPeriod = mPeriod;
+    }
+
+    public String getCmd_Param() {
+        return cmd_Param;
+    }
+
+    public void setCmd_Param(String cmd_Param) {
+        this.cmd_Param = cmd_Param;
     }
 
     @Override

@@ -31,10 +31,6 @@ public abstract class Command {
      */
     protected String mCommandID;
     /**
-     * 指令描述
-     */
-    protected String mCommandDesc;
-    /**
      * 指令参数
      */
     protected String mCommandParam;
@@ -132,6 +128,7 @@ public abstract class Command {
         mCommandType = vo.getCmdType();
         mParamType = vo.getParamType();
         mResultType = vo.getResultType();
+        mCommandParam = vo.getCmd_Param();
     }
 
     public String getCommandResult() {
