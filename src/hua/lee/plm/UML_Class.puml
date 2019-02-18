@@ -1,0 +1,163 @@
+@startuml
+
+package "com.duokan.apps.FactoryTest.server" as server #lavender{
+    interface OnCommandListener{
+        +void handleCommand(String msgid,String param);
+        +void setResultOver(PrintWriter writer);
+    }
+    class CommandSource{
+        #OnCommandListener mCmdListener;
+        #LocalSocketAddress address;
+        #LocalSocket mSocket;
+        ..输入输出..
+        #InputStream mIn;
+        #OutputStream mOut;
+        ..通讯线程..
+        #Thread Socket_receive;
+        #Thread Socket_connect;
+        ..数据发送..
+        +sendMsg(byte[] comd,int len);
+        ..关闭通讯..
+        +finishCommandSource();
+        ..CMD ID 广播接收器..
+        -FakeCommandBroadcastReceiver fakeCommandReceiver;
+    }
+
+    class TvCommandDescription{
+        ..CMD 命令集合..
+        {static} +int[] CMD_ID_Collections;
+        ..CMD 命令描述，包含指令类型和描述信息..
+        {static} +String[][] cmdDesc;
+        ---
+        +String getCmdExplanationByID(String id);
+        +String getCmdTypeByID(String id);
+        +String[] getCmdDescByID(String id);
+        +int getCmdIndexByID(String id);
+        +String getCmdTypeByIndex(int index);
+        ---
+        ..通过 CMD ID 获取 name..
+        {static} +String getCmdNameForCmdid(String cmdid);
+        ..获取 Activity 的 ComponentName..
+        {static} +ComponentName getComponentNameForCmd(String cmdid);
+        ..获取 Activity 的 Action..
+        {static} +String getFilterActionForCmd(String cmdid);
+    }
+
+    class BaseCommandService{
+        -CommandSource commandSource
+        -TvCommandDescription mTvCd;
+        ..middleware impl API 集合..
+        #MiddlewareImplApi[] middlewareApis；
+        ..OnCommandListener 回调..
+        +void handleCommand(String cmdid, String param);
+        +void setResultOver(PrintWriter writer);
+        ..数据发送相关..
+        +void setResult_string(String cmdid,String resultMsg);
+        +void setResult_bool(String cmdid,boolean resultMsg);
+        +void setResult_byte(String cmdid,byte[] resultMsg);
+        ..广播发送，for CommandBroadcastReceiver..
+        +void TvSetControlMsg(Command cmd, int para0, String para1, String para2);
+        ..Activity 跳转..
+        +void TvhandleCommandForActivity(Command c);
+        ..Command任务栈操作..
+        #Command addRunningCommand(String cmdid, String param)；
+        #Command findRunningCommandLocked(String id, String para)；
+        #Command removeRunningCommand(String cmdid, String param)；
+        #Command findRunningCommandById(String cmdid)；
+        #void finishCommand(String cmdid, String param);
+
+    }
+
+    class CommandService{
+        ..工厂参数初始化..
+        -void prepareFactoryTest();
+        -void prepareFactoryTestTV()；
+        -void initLocalPropTV();
+        -void autoRunCommand();
+        ..OnCommandListener 回调..
+        +void handleCommand(String cmdid, String Param);
+        ..Command 业务处理..
+        -void handleCommandTv(String cmdid, String Param)；
+        -void handleCommandBox(String cmdid, String Param)；
+        ..其他..
+        +String changeStringToAscII(String src)；
+        +String changeInt2String(int src)；
+        +String changeStringToIP(String src)；
+
+    }
+}
+
+package "com.duokan.apps.FactoryMiddleware.middleware" as middle_jar #green{
+    interface AudioTest
+    interface InfoAccessTest
+    interface LocalProperty
+    interface MediaTest
+    interface PictureModeTest
+    interface RFNetTest
+    interface StorageTest
+    interface SysAccessTest
+}
+
+package "com.duokan.apps.FactoryTest.activity" as activitys #yello{
+    class BaseActivity{
+        -CommandBroadcastReceiver commandReceiver;
+        -ICommandService sService;
+        ..Activity 与 Service 建立连接后执行此方法..
+        +void handleCommand(String cmdid, String param);
+        .. 当commandReceiver收到Command 时执行此方法..
+        +void handleControlMsg(int cmdtype, String cmdid, String cmdpara);
+        ..result 返回..
+        +void setResult(String id, String msg);
+        +void setResult(String id, byte[] msg);
+        +void setResult(String id, boolean result);
+        +void setResult(String id, String msg, boolean finish);
+        +void setResult(String id, byte[] msg, boolean finish);
+        +void setResult(String id, boolean result, boolean finish)；
+    }
+    class InputSourceForTvView
+    class CameraTest
+    class XPRTest
+    class AutoFocus
+    class LocalMedia
+    class ResolutionTest
+    class FactoryLauncher{
+        --main activity--
+    }
+}
+package "android.content.BroadcastReceiver" as receivers #pink{
+    class CommandBroadcastReceiver{
+        ..Cmd ID 接收 for business..
+    }
+    class FakeCommandBroadcastReceiver{
+        ..Cmd ID 接收 for Server..
+    }
+}
+
+package "AIDL" as aidl #light{
+    interface ICommandService{
+    }
+    interface IMotorFocusService{
+    }
+}
+
+
+BaseCommandService *-left->CommandSource
+BaseCommandService *--down--> middle_jar
+BaseCommandService ..>OnCommandListener
+CommandSource *-up-> FakeCommandBroadcastReceiver
+CommandSource *-left-> OnCommandListener
+CommandService -down-|> BaseCommandService
+CommandService *-right-> TvCommandDescription
+
+BaseActivity *--> CommandBroadcastReceiver
+
+InputSourceForTvView --|> BaseActivity
+CameraTest --|> BaseActivity
+XPRTest --|> BaseActivity
+AutoFocus --|> BaseActivity
+LocalMedia --|> BaseActivity
+ResolutionTest --|> BaseActivity
+FactoryLauncher --|> BaseActivity
+
+
+@enduml
