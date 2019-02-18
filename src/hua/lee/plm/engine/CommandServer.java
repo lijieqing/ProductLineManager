@@ -24,13 +24,13 @@ public class CommandServer {
     private RxCommandTask rt;
 
     private static CommandWrapper wrapper = null;
-    private static Command command = null;
 
     static void notifyDataReceived(byte[] data) {
-        command = new Command(data);
+        Command command = new Command(data);
 
-        if (wrapper == null) {
+        if (wrapper == null || !wrapper.isReceiving()) {
             wrapper = new CommandWrapper();
+            wrapper.setCmdID(command.getCommandID());
 //            wrapper = PLMContext.cmdWrapper.get(command.getCommandID());
 //            if (wrapper == null) {
 //                System.out.println("undefined command : ID = " + command.getCommandID());
@@ -41,9 +41,9 @@ public class CommandServer {
         if ((command.getCmdNum() + 1) == command.getCmdSum()) {
             System.out.println("received last frame cmd data ,and cmd is is " + command.getCommandID());
             wrapper.addCommand(command);
-            wrapper.setCmdID(command.getCommandID());
             dataList.add(wrapper);
-            wrapper = null;
+            wrapper.received();
+            wrapper.onRxDataRec();
         } else {
             if (wrapper.getCmdID().equals(command.getCommandID())) {
                 System.out.println("received multi cmd data ,and cmd id is " + command.getCommandID());
@@ -104,6 +104,7 @@ public class CommandServer {
         public void run() {
             while (true) {
 
+                //System.out.println("RxCommandTask :: size = "+dataList.size());
                 while (dataList.size() > 0) {
                     CommandWrapper rxData = dataList.pop();
                     rxData.onRxDataRec();

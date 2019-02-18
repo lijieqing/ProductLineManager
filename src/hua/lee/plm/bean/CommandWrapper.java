@@ -17,12 +17,21 @@ public class CommandWrapper {
     private LinkedList<Command> cmdList;
     private CommandVO cmdVO;
     private byte[] data;
+    private boolean receiving = true;
 
     private static Map<String, List<RxDataCallback>> listenerMap = new HashMap<>();
 
 
     public CommandWrapper() {
         cmdList = new LinkedList<>();
+    }
+
+    public boolean isReceiving() {
+        return receiving;
+    }
+
+    public void received() {
+        receiving = false;
     }
 
     public String getCmdID() {
