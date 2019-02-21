@@ -23,7 +23,9 @@ public final class CommandFactory {
     private CommandFactory() {
     }
 
-    public static final byte DATA_TYPE = 0b00000000;
+    public static final byte CMD_FUNC = 0b00000000;
+    public static final byte CMD_DATA = 0b00000001;
+    public static final byte CMD_CONTROL = 0b00000010;
     public static final byte ACK_TYPE = 0b00010000;
     public static final byte NACK_TYPE = 0b00100000;
 
@@ -135,9 +137,13 @@ public final class CommandFactory {
         if (cmdID.length() != 4) {
             return null;
         } else {
-            byte cmd_left = Byte.parseByte(cmdID.substring(0,2),16);
-            byte cmd_right = Byte.parseByte(cmdID.substring(2,4),16);
-            return new Command(cmd_left,cmd_right,DATA_TYPE,(byte)0,null,(byte)0,(byte)1);
+            byte cmd_left = Byte.parseByte(cmdID.substring(0, 2), 16);
+            byte cmd_right = Byte.parseByte(cmdID.substring(2, 4), 16);
+            return new Command(cmd_left, cmd_right, CMD_FUNC, (byte) 0, null, (byte) 0, (byte) 1);
         }
+    }
+
+    public static Command generateCommandBySource(byte[] data, byte num, byte sum, byte... cmdID) {
+        return new Command(cmdID[0], cmdID[1], CMD_FUNC, (byte) data.length, data, num, sum);
     }
 }

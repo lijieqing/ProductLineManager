@@ -48,32 +48,16 @@ public class Command {
         return cmdNum;
     }
 
-    public void setCmdNum(byte cmdNum) {
-        this.cmdNum = cmdNum;
-    }
-
     public byte getCmdSum() {
         return cmdSum;
-    }
-
-    public void setCmdSum(byte cmdSum) {
-        this.cmdSum = cmdSum;
     }
 
     public byte getCmdID_Left() {
         return cmdID_Left;
     }
 
-    public void setCmdID_Left(byte cmdID_Left) {
-        this.cmdID_Left = cmdID_Left;
-    }
-
     public byte getCmdID_Right() {
         return cmdID_Right;
-    }
-
-    public void setCmdID_Right(byte cmdID_Right) {
-        this.cmdID_Right = cmdID_Right;
     }
 
     public byte getCmdType() {
@@ -88,20 +72,12 @@ public class Command {
         return dataLen;
     }
 
-    public void setDataLen(byte dataLen) {
-        this.dataLen = dataLen;
-    }
-
     public byte[] getData() {
         return data;
     }
 
-    public void setData(byte[] data) {
-        this.data = data;
-    }
-
     public String getCommandID() {
-        return Integer.toHexString((cmdID_Left << 8) + (cmdID_Right&0xff)).toUpperCase();
+        return Integer.toHexString((cmdID_Left << 8) + (cmdID_Right & 0xff)).toUpperCase();
     }
 
 }

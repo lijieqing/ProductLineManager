@@ -10,7 +10,7 @@ import java.util.Arrays;
 import java.util.Enumeration;
 
 import static hua.lee.plm.engine.CommandFactory.ACK_TYPE;
-import static hua.lee.plm.engine.CommandFactory.DATA_TYPE;
+import static hua.lee.plm.engine.CommandFactory.CMD_FUNC;
 import static hua.lee.plm.engine.CommandServer.*;
 
 /**
@@ -157,7 +157,7 @@ public class CommunicateEngine extends Thread {
         System.arraycopy(recdata, start, cmd, 0, len);
 
         switch (cmd[1]) {
-            case DATA_TYPE:
+            case CMD_FUNC:
                 System.out.println("we received Data Command,so we send ACK back");
                 Command ack = new Command(cmd[2], cmd[3], ACK_TYPE, (byte) 0, null, (byte) 0, (byte) 1);
                 sendList.add(ack);
@@ -166,7 +166,7 @@ public class CommunicateEngine extends Thread {
                 break;
             case ACK_TYPE:
                 Command c = new Command(cmd);
-                ackList.put(c.getCommandID(), c);
+                ackList.put(c.getCommandID().toUpperCase(), c);
                 System.out.println("we received ACK Command");
                 break;
         }
