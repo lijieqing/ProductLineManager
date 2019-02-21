@@ -1,8 +1,7 @@
 package hua.lee.plm.engine;
 
-import hua.lee.plm.base.PLMContext;
 import hua.lee.plm.bean.Command;
-import hua.lee.plm.bean.CommandWrapper;
+import hua.lee.plm.bean.CommandRxWrapper;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -17,19 +16,19 @@ import java.util.Map;
  **/
 public class CommandServer {
     public static LinkedList<Command> sendList = new LinkedList<>();
-    public static LinkedList<CommandWrapper> dataList = new LinkedList<>();
+    public static LinkedList<CommandRxWrapper> dataList = new LinkedList<>();
     public static Map<String, Command> ackList = new HashMap<>();
 
     private CommunicateEngine ce;
     private RxCommandTask rt;
 
-    private static CommandWrapper wrapper = null;
+    private static CommandRxWrapper wrapper = null;
 
     static void notifyDataReceived(byte[] data) {
         Command command = new Command(data);
 
         if (wrapper == null || !wrapper.isReceiving()) {
-            wrapper = new CommandWrapper();
+            wrapper = new CommandRxWrapper();
             wrapper.setCmdID(command.getCommandID());
 //            wrapper = PLMContext.cmdWrapper.get(command.getCommandID());
 //            if (wrapper == null) {
@@ -106,7 +105,7 @@ public class CommandServer {
 
                 //System.out.println("RxCommandTask :: size = "+dataList.size());
                 while (dataList.size() > 0) {
-                    CommandWrapper rxData = dataList.pop();
+                    CommandRxWrapper rxData = dataList.pop();
                     rxData.onRxDataRec();
                 }
 

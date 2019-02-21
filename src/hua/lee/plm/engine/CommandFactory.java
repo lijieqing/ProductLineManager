@@ -1,7 +1,7 @@
 package hua.lee.plm.engine;
 
 import hua.lee.plm.bean.Command;
-import hua.lee.plm.bean.CommandWrapper;
+import hua.lee.plm.bean.CommandRxWrapper;
 import hua.lee.plm.vo.CommandListVO;
 import hua.lee.plm.vo.CommandVO;
 import lee.hua.xmlparse.api.XMLAPI;
@@ -23,6 +23,9 @@ public final class CommandFactory {
     private CommandFactory() {
     }
 
+    /**
+     * 工厂目前都是此类型
+     */
     public static final byte CMD_FUNC = 0b00000000;
     public static final byte CMD_DATA = 0b00000001;
     public static final byte CMD_CONTROL = 0b00000010;
@@ -55,7 +58,7 @@ public final class CommandFactory {
         CommandListVO res = (CommandListVO) XMLAPI.readXML(new FileInputStream(filePath));
 
         for (CommandVO commandVO : res.getCommandList()) {
-            CommandWrapper wrapper = new CommandWrapper();
+            CommandRxWrapper wrapper = new CommandRxWrapper();
             cmdMap.put(commandVO.getCmd_ID().toUpperCase(), commandVO);
 
             wrapper.setCmdVO(commandVO);
@@ -81,10 +84,14 @@ public final class CommandFactory {
      * @param cmdID command id
      * @return command
      */
-    public static byte[] generateACKCMD(byte... cmdID) {
+    public static byte[] generateACKCMD(boolean isAck,byte... cmdID) {
         byte[] ack = new byte[9];
         ack[0] = (byte) 0x79;
-        ack[1] = ACK_TYPE;
+        if (isAck){
+            ack[1] = ACK_TYPE;
+        }else {
+            ack[1] = NACK_TYPE;
+        }
         ack[2] = cmdID[0];
         ack[3] = cmdID[1];
         ack[4] = 0x00;

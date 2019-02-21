@@ -1,18 +1,13 @@
 package hua.lee.plm.engine;
 
 
-import com.sun.xml.internal.fastinfoset.util.CharArray;
-import com.sun.xml.internal.fastinfoset.util.CharArrayString;
 import hua.lee.plm.base.DataTypeUtil;
 import hua.lee.plm.base.RxDataCallback;
-import hua.lee.plm.bean.Command;
-import hua.lee.plm.bean.CommandWrapper;
 
 import java.io.*;
 import java.util.*;
 
 import static hua.lee.plm.base.DataTypeUtil.*;
-import static hua.lee.plm.engine.CommandFactory.*;
 
 /**
  * test

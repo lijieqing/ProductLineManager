@@ -1,6 +1,7 @@
 package hua.lee.plm.bean;
 
 import com.sun.istack.internal.NotNull;
+import hua.lee.plm.base.CommandWrapper;
 import hua.lee.plm.base.RxDataCallback;
 import hua.lee.plm.vo.CommandVO;
 
@@ -12,17 +13,14 @@ import java.util.*;
  * @author lijie
  * @create 2019-01-08 14:50
  **/
-public class CommandWrapper {
-    private String cmdID = "";
-    private LinkedList<Command> cmdList;
-    private CommandVO cmdVO;
+public class CommandRxWrapper extends CommandWrapper {
     private byte[] data;
     private boolean receiving = true;
 
     private static Map<String, List<RxDataCallback>> listenerMap = new HashMap<>();
 
 
-    public CommandWrapper() {
+    public CommandRxWrapper() {
         cmdList = new LinkedList<>();
     }
 

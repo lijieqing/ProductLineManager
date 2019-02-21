@@ -9,8 +9,7 @@ import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Enumeration;
 
-import static hua.lee.plm.engine.CommandFactory.ACK_TYPE;
-import static hua.lee.plm.engine.CommandFactory.CMD_FUNC;
+import static hua.lee.plm.engine.CommandFactory.*;
 import static hua.lee.plm.engine.CommandServer.*;
 
 /**
@@ -75,6 +74,8 @@ public class CommunicateEngine extends Thread {
                                         System.out.println("received CRC is " + recvBuff[recvCMDStart + cmdLen - 2]);
                                         System.out.println("calc CRC is " + CommandFactory.calCRC(recvBuff, recvCMDStart, cmdLen));
                                         System.out.println(Arrays.toString(recvBuff));
+                                        byte[] nack = generateACKCMD(false, recvBuff[recvCMDStart + 2], recvBuff[recvCMDStart + 3]);
+                                        sendList.add(new Command(nack));
                                         break;
                                     }
                                 }
@@ -157,6 +158,8 @@ public class CommunicateEngine extends Thread {
         System.arraycopy(recdata, start, cmd, 0, len);
 
         switch (cmd[1]) {
+            case CMD_CONTROL:
+            case CMD_DATA:
             case CMD_FUNC:
                 System.out.println("we received Data Command,so we send ACK back");
                 Command ack = new Command(cmd[2], cmd[3], ACK_TYPE, (byte) 0, null, (byte) 0, (byte) 1);

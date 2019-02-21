@@ -1,12 +1,15 @@
 package hua.lee.plm.bean;
 
 import com.sun.istack.internal.NotNull;
+import hua.lee.plm.base.CommandWrapper;
 import hua.lee.plm.base.PLMContext;
 import hua.lee.plm.engine.CommandFactory;
 import hua.lee.plm.engine.CommandServer;
-import hua.lee.plm.vo.CommandVO;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.LinkedList;
 
 /**
@@ -15,18 +18,15 @@ import java.util.LinkedList;
  * @author lijie
  * @create 2019-02-21 13:41
  **/
-public class CommandTxWrapper {
+public class CommandTxWrapper extends CommandWrapper {
     public static final int DATA_FILE = 0;
     public static final int DATA_STRING = 1;
 
-    private String cmdID;
-    private LinkedList<Command> cmdList = new LinkedList<>();
-    private CommandVO cmdVO;
-    private byte cmd_left;
-    private byte cmd_right;
     private byte cmdType;
 
     public CommandTxWrapper(@NotNull String cmdID, String data, int dataType, int cmdType) {
+        cmdList = new LinkedList<>();
+
         this.cmdID = cmdID.toUpperCase();
         cmd_left = Byte.parseByte(cmdID.substring(0, 2), 16);
         cmd_right = Byte.parseByte(cmdID.substring(2, 4), 16);
@@ -48,22 +48,24 @@ public class CommandTxWrapper {
     }
 
     public void send() {
-        Command cmd;
-        System.out.println("数据帧数量："+cmdList.size());
-        while (cmdList.size() > 0) {
-            cmd = cmdList.pop();
-            //cmd.setCmdType(cmdType);
+        new Thread(() -> {
+            Command cmd;
+            System.out.println("数据帧数量：" + cmdList.size());
+            while (cmdList.size() > 0) {
+                cmd = cmdList.pop();
+                cmd.setCmdType(cmdType);
 
-            PLMContext.commandServer.sendCommand(cmd);
-            PLMContext.sleep(3000);
-            Command ack = CommandServer.ackList.get(cmdID);
-            if (ack == null) {
-                System.out.println("未收到 ACK 回复");
-                break;
+                PLMContext.commandServer.sendCommand(cmd);
+                PLMContext.sleep(50);
+                Command ack = CommandServer.ackList.get(cmdID);
+                if (ack == null) {
+                    System.out.println("未收到 ACK 回复");
+                    break;
+                }
+                CommandServer.ackList.remove(cmdID);
             }
-            CommandServer.ackList.remove(cmdID);
-        }
-        cmdList.clear();
+            cmdList.clear();
+        }).start();
     }
 
 
