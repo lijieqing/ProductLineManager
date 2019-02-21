@@ -68,11 +68,13 @@ public class CommandWrapper {
 
     public void onRxDataRec() {
         loadCommandData();
+        List<RxDataCallback> callList = listenerMap.get(cmdID);
+        if (callList != null) {
+            for (RxDataCallback callback : listenerMap.get(cmdID)) {
+                callback.notifyDataReceived(cmdID, data);
+            }
 
-        for (RxDataCallback callback : listenerMap.get(cmdID)) {
-            callback.notifyDataReceived(cmdID, data);
         }
-
         cmdList.clear();
     }
 
@@ -90,8 +92,10 @@ public class CommandWrapper {
 
         for (int i = 0; i < cmdList.size(); i++) {
             temp = map.get(i).getData();
-            System.arraycopy(temp, 0, data, curPos, temp.length);
-            curPos += temp.length;
+            if (temp != null) {
+                System.arraycopy(temp, 0, data, curPos, temp.length);
+                curPos += temp.length;
+            }
         }
     }
 }

@@ -68,8 +68,8 @@ public class CommandServer {
         ce = new CommunicateEngine();
         ce.start();
 
-        rt = new RxCommandTask();
-        rt.start();
+//        rt = new RxCommandTask();
+//        rt.start();
     }
 
     public void sendCommand(Command cmd) {

@@ -30,43 +30,48 @@ public class HDCPTest {
         CommandWrapper.addRxDataCallBack("1411", callback);
         CommandWrapper.addRxDataCallBack("1475", callback);
 
-        cmd1409 = generateCommandByID("1409");
-        cmd1411 = generateCommandByID("1411");
+        //cmd1409 = generateCommandByID("1409");
+        //cmd1411 = generateCommandByID("1411");
         //server.sendCommand(generateCommandByID("1475"));
 //        server.sendCommand();
         //server.sendCommand(generateCommandByID("1411"));
-        new Thread() {
-            @Override
-            public void run() {
-                int i = 0;
-                while (i < 30) {
-                    server.sendCommand(cmd1409);
-                    try {
-                        Thread.sleep(3000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    server.sendCommand(cmd1411);
-
-                    try {
-                        Thread.sleep(3000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    i++;
-                }
-            }
-        }.start();
+//        new Thread() {
+//            @Override
+//            public void run() {
+//                int i = 0;
+//                while (i < 1) {
+//                    server.sendCommand(cmd1409);
+//                    try {
+//                        Thread.sleep(3000);
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
+//                    server.sendCommand(cmd1411);
+//
+//                    try {
+//                        Thread.sleep(3000);
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
+//                    i++;
+//                }
+//            }
+//        }.start();
     }
 
     static class MyCallback implements RxDataCallback {
 
         @Override
         public void notifyDataReceived(String cmdID, byte[] data) {
-            String path = "/Users/lijie/Desktop/TE/"+(cmdID.equals("1409")?"hdcp14":"hdcp22")+ new Date().getTime()+".bin";
+            System.out.println("received cmd id = " + cmdID);
+            System.out.println("received data  = " + new String(data));
+        }
+
+        private void generateFile(String cmdID, byte[] data) {
+            String path = "/Users/lijie/Desktop/TE/" + (cmdID.equals("1409") ? "hdcp14" : "hdcp22") + new Date().getTime() + ".bin";
             File file = new File(path);
             OutputStream outs = null;
-            if (!file.exists()){
+            if (!file.exists()) {
                 try {
                     file.createNewFile();
                     outs = new FileOutputStream(file);
@@ -77,7 +82,7 @@ public class HDCPTest {
                 }
             }
 
-            if (outs!=null){
+            if (outs != null) {
                 try {
                     outs.close();
                 } catch (IOException e) {
