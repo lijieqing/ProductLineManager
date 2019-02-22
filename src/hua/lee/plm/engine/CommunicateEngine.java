@@ -1,16 +1,16 @@
 package hua.lee.plm.engine;
 
-import gnu.io.*;
 import hua.lee.plm.bean.Command;
+import hua.lee.plm.factory.CommandFactory;
+import hua.lee.plm.factory.IOFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
-import java.util.Enumeration;
 
-import static hua.lee.plm.engine.CommandFactory.*;
 import static hua.lee.plm.engine.CommandServer.*;
+import static hua.lee.plm.factory.CommandFactory.*;
 
 /**
  * 通讯引擎
@@ -19,12 +19,12 @@ import static hua.lee.plm.engine.CommandServer.*;
  * @create 2018-10-30 18:23
  **/
 public class CommunicateEngine extends Thread {
-    private static SerialPort port = null;
     private static OutputStream output;
     private static InputStream input;
 
     public CommunicateEngine() {
-        initPort();
+        input = IOFactory.initPort().loadInputStream();
+        output = IOFactory.initPort().loadOutputStream();
     }
 
     //接收数据长度
@@ -111,6 +111,7 @@ public class CommunicateEngine extends Thread {
             }
         } catch (IOException e) {
             e.printStackTrace();
+            IOFactory.initPort().closePort();
         }
     }
 
@@ -182,62 +183,8 @@ public class CommunicateEngine extends Thread {
 
     }
 
-    /**
-     * 串口初始化
-     */
-    private void initPort() {
-        if (port != null) {
-            System.out.println("已初始化串口：" + port.getName());
-            return;
-        }
-        Enumeration ports = CommPortIdentifier.getPortIdentifiers();
-        while (ports.hasMoreElements()) {
-            CommPortIdentifier cp = (CommPortIdentifier) ports.nextElement();
-            System.out.println(cp.getName() + " :::: " + cp.toString());
-            if (cp.getName().contains("tty.SLAB_USBtoUART")) {
-                try {
-                    //mac 第一次运行程序，需建立/var/lock 文件夹
-                    //并且设置权限 chmod go+rwx
-                    CommPort commPort = cp.open("/dev/tty.SLAB_USBtoUART", 50);
-                    if (commPort instanceof SerialPort) {
-                        port = (SerialPort) commPort;
-                        port.setSerialPortParams(115200, SerialPort.DATABITS_8,
-                                SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
-                        input = port.getInputStream();
-                        output = port.getOutputStream();
-                    }
-
-                } catch (PortInUseException e) {
-                    e.printStackTrace();
-                    System.out.println(cp.getName() + " ::: init failed \n" + e.getMessage());
-                } catch (UnsupportedCommOperationException | IOException e) {
-                    e.printStackTrace();
-                }
-                break;
-            }
-        }
-    }
-
-    /**
-     * 关闭串口
-     */
     public void closePort() {
-        try {
-            if (input != null) {
-                input.close();
-            }
-            if (output != null) {
-                output.close();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            input = null;
-        }
-
-        if (port != null) {
-            port.close();
-        }
+        IOFactory.initPort().closePort();
     }
-
 
 }

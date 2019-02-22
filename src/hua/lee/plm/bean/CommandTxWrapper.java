@@ -3,7 +3,7 @@ package hua.lee.plm.bean;
 import com.sun.istack.internal.NotNull;
 import hua.lee.plm.base.CommandWrapper;
 import hua.lee.plm.base.PLMContext;
-import hua.lee.plm.engine.CommandFactory;
+import hua.lee.plm.factory.CommandFactory;
 import hua.lee.plm.engine.CommandServer;
 
 import java.io.File;
@@ -11,6 +11,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.LinkedList;
+
+import static hua.lee.plm.factory.CommandFactory.*;
 
 /**
  * 命令发送包装类
@@ -23,6 +25,10 @@ public class CommandTxWrapper extends CommandWrapper {
     public static final int DATA_STRING = 1;
 
     private byte cmdType;
+
+    public CommandTxWrapper(@NotNull String cmdID, String data, int dataType) {
+        this(cmdID, data, dataType, CMD_FUNC);
+    }
 
     public CommandTxWrapper(@NotNull String cmdID, String data, int dataType, int cmdType) {
         cmdList = new LinkedList<>();
