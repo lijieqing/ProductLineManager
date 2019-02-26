@@ -37,16 +37,21 @@ public class CommunicateEngine extends Thread {
     private byte[] recvBuff = new byte[bufferLen];
     //读取数据的起始位置
     private int recvCMDStart = 0;
-
+    //帧头格式
     private byte FRAME_HEAD = 0x79;
+    //帧尾格式
     private byte FRAME_TAIL = (byte) 0xFE;
+    //最小数据帧长度
+    private int FRAME_LEN_MIN = 9;
+    //通讯线程运行状态
+    private static volatile boolean running = true;
 
 
     @Override
     public void run() {
         try {
 
-            while (true) {
+            while (running) {
 
                 if (input.available() > 0) {
                     //根据当前缓冲区剩余数据累加读取
@@ -55,12 +60,12 @@ public class CommunicateEngine extends Thread {
 
                     while (true) {
                         // 如果长度大于空数据帧长度,开始解析
-                        if (recvLen >= 9) {
+                        if (recvLen >= FRAME_LEN_MIN) {
                             int cmdLen;
 
                             if (recvBuff[recvCMDStart] == FRAME_HEAD) {
                                 //包含完整数据帧
-                                if ((cmdLen = (9 + recvBuff[recvCMDStart + 4])) <= recvLen) {
+                                if ((cmdLen = (FRAME_LEN_MIN + recvBuff[recvCMDStart + 4])) <= recvLen) {
                                     //CRC 校验 pass
                                     if (recvBuff[recvCMDStart + cmdLen - 2] == CommandFactory.calCRC(recvBuff, recvCMDStart, cmdLen)) {
                                         System.out.println("Received new Command data !!");
@@ -159,6 +164,9 @@ public class CommunicateEngine extends Thread {
         System.arraycopy(recdata, start, cmd, 0, len);
 
         switch (cmd[1]) {
+            case HEART_BEAT:
+                //重置守护线程
+                break;
             case CMD_CONTROL:
             case CMD_DATA:
             case CMD_FUNC:
@@ -185,6 +193,7 @@ public class CommunicateEngine extends Thread {
 
     public void closePort() {
         IOFactory.initPort().closePort();
+        running = false;
     }
 
 }

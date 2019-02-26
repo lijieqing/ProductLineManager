@@ -24,13 +24,15 @@ public final class CommandFactory {
     }
 
     /**
-     * 工厂目前都是此类型
+     * CMD_FUNC 工厂目前都是此类型
      */
     public static final byte CMD_FUNC = 0b00000000;
     public static final byte CMD_DATA = 0b00000001;
     public static final byte CMD_CONTROL = 0b00000010;
     public static final byte ACK_TYPE = 0b00010000;
     public static final byte NACK_TYPE = 0b00100000;
+
+    public static final byte HEART_BEAT = 0b00001111;
 
     /**
      * @param filePath "/Users/lijie/Desktop/COM.xml"
@@ -152,5 +154,23 @@ public final class CommandFactory {
 
     public static Command generateCommandBySource(byte[] data, byte num, byte sum, byte... cmdID) {
         return new Command(cmdID[0], cmdID[1], CMD_FUNC, (byte) data.length, data, num, sum);
+    }
+
+    /**
+     * 获取心跳帧Command
+     * @return 心跳帧示例
+     */
+    public static Command generateHeartBeatCommand(){
+        byte[] hb = new byte[9];
+        hb[0] = 0x79;
+        hb[1] = HEART_BEAT;
+        hb[2] = (byte) 0xFF;
+        hb[3] = (byte) 0xFF;
+        hb[4] = 0;
+        hb[5] = 0;
+        hb[6] = 1;
+        hb[7] = calCRC(hb);
+        hb[8] = (byte) 0xFE;
+        return new Command(hb);
     }
 }

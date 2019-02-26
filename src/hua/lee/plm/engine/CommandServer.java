@@ -3,9 +3,9 @@ package hua.lee.plm.engine;
 import hua.lee.plm.bean.Command;
 import hua.lee.plm.bean.CommandRxWrapper;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
+import java.util.*;
+
+import static hua.lee.plm.factory.CommandFactory.*;
 
 
 /**
@@ -20,9 +20,10 @@ public class CommandServer {
     public static Map<String, Command> ackList = new HashMap<>();
 
     private CommunicateEngine ce;
-    private RxCommandTask rt;
 
     private static CommandRxWrapper wrapper = null;
+
+    private Timer heartBeat;
 
     static void notifyDataReceived(byte[] data) {
         Command command = new Command(data);
@@ -63,33 +64,25 @@ public class CommandServer {
 
     }
 
+    /**
+     * start communicate engine and heartbeat
+     */
     public void init() {
         ce = new CommunicateEngine();
         ce.start();
 
-//        rt = new RxCommandTask();
-//        rt.start();
+        heartBeat = new Timer();
+        heartBeat.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                sendCommand(generateHeartBeatCommand());
+            }
+        }, 100, 6 * 1000);
     }
 
     public void sendCommand(Command cmd) {
         synchronized (this) {
             sendList.add(cmd);
-//            int count = 0;
-//            Command ack = null;
-//            while (ack == null && count < 3) {
-//                count++;
-//                sendList.add(cmd);
-//                ack = ackList.get(cmd.getCommandID());
-//
-//                try {
-//                    Thread.sleep(200);
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//            if (ack != null) {
-//                sendCommandFirst(new Command(CommandFactory.generateACKCMD(cmd.getCmdID_Left(), cmd.getCmdID_Right())));
-//            }
         }
 
     }
@@ -98,20 +91,15 @@ public class CommandServer {
         sendList.addFirst(cmd);
     }
 
-    class RxCommandTask extends Thread {
-        @Override
-        public void run() {
-            while (true) {
-
-                //System.out.println("RxCommandTask :: size = "+dataList.size());
-                while (dataList.size() > 0) {
-                    CommandRxWrapper rxData = dataList.pop();
-                    rxData.onRxDataRec();
-                }
-
-            }
+    /**
+     * close
+     */
+    public void close() {
+        if (ce != null){
+            ce.closePort();
+        }
+        if (heartBeat != null) {
+            heartBeat.cancel();
         }
     }
-
-
 }
