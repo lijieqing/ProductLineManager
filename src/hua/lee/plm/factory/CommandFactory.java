@@ -146,8 +146,8 @@ public final class CommandFactory {
         if (cmdID.length() != 4) {
             return null;
         } else {
-            byte cmd_left = Byte.parseByte(cmdID.substring(0, 2), 16);
-            byte cmd_right = Byte.parseByte(cmdID.substring(2, 4), 16);
+            byte cmd_left = (byte) Integer.parseInt(cmdID.substring(0, 2), 16);
+            byte cmd_right = (byte) Integer.parseInt(cmdID.substring(2, 4), 16);
             return new Command(cmd_left, cmd_right, CMD_FUNC, (byte) 0, null, (byte) 0, (byte) 1);
         }
     }
