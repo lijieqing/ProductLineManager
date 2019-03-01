@@ -6,6 +6,7 @@ import hua.lee.plm.base.RxDataCallback;
 import hua.lee.plm.vo.CommandVO;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Command Wrapper
@@ -20,7 +21,7 @@ public class CommandRxWrapper extends CommandWrapper {
 
 
     public CommandRxWrapper() {
-        cmdList = new LinkedList<>();
+        cmdList = new ConcurrentLinkedQueue<>();
     }
 
     /**
@@ -92,7 +93,6 @@ public class CommandRxWrapper extends CommandWrapper {
             }
 
         }
-        cmdList.clear();
     }
 
     private void loadCommandData() {
@@ -117,5 +117,6 @@ public class CommandRxWrapper extends CommandWrapper {
                 }
             }
         }
+        cmdList.clear();
     }
 }

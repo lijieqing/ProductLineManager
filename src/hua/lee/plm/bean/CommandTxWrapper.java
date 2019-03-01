@@ -11,6 +11,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.LinkedList;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static hua.lee.plm.factory.CommandFactory.*;
 
@@ -31,7 +32,7 @@ public class CommandTxWrapper extends CommandWrapper {
     }
 
     public CommandTxWrapper(@NotNull String cmdID, String data, int dataType, int cmdType) {
-        cmdList = new LinkedList<>();
+        cmdList = new ConcurrentLinkedQueue<>();
 
         this.cmdID = cmdID.toUpperCase();
         cmd_left = (byte) Integer.parseInt(cmdID.substring(0, 2), 16);
@@ -58,30 +59,33 @@ public class CommandTxWrapper extends CommandWrapper {
             @Override
             public void run() {
                 Command cmd;
-                System.out.println("数据帧数量：" + cmdList.size());
+                int frameNum = cmdList.size();
+                System.out.println("数据帧数量：" + frameNum);
                 while (cmdList.size() > 0 && PLMContext.commandServer != null) {
-                    cmd = cmdList.pop();
+                    cmd = cmdList.poll();
                     cmd.setCmdType(cmdType);
 
                     PLMContext.commandServer.sendCommand(cmd);
                     PLMContext.sleep(300);
-                    //重发机制
-                    for (int i = 0; i < 3; i++) {
-                        Command ack = null;
-                        int count = 0;
-                        while (ack == null && count < 3) {
-                            PLMContext.sleep(50);
-                            ack = CommandServer.ackList.get(cmdID);
-                            count++;
-                        }
-                        if (ack == null) {
-                            System.out.println("未收到 ACK 回复，重复发送");
-                            PLMContext.commandServer.sendCommand(cmd);
-                            PLMContext.sleep(300);
-                        } else {
-                            System.out.println("收到 ACK 回复");
-                            CommandServer.ackList.remove(cmdID);
-                            break;
+                    if (frameNum == 1){
+                        //重发机制
+                        for (int i = 0; i < 3; i++) {
+                            Command ack = null;
+                            int count = 0;
+                            while (ack == null && count < 3) {
+                                PLMContext.sleep(50);
+                                ack = CommandServer.ackList.get(cmdID);
+                                count++;
+                            }
+                            if (ack == null) {
+                                System.out.println("未收到 ACK 回复，重复发送");
+                                PLMContext.commandServer.sendCommand(cmd);
+                                PLMContext.sleep(300);
+                            } else {
+                                System.out.println("收到 ACK 回复");
+                                CommandServer.ackList.remove(cmdID);
+                                break;
+                            }
                         }
                     }
                 }
