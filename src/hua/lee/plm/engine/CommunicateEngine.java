@@ -1,12 +1,12 @@
 package hua.lee.plm.engine;
 
+import com.sun.istack.internal.NotNull;
+import hua.lee.plm.base.CommunicatePort;
 import hua.lee.plm.bean.Command;
 import hua.lee.plm.factory.CommandFactory;
 import hua.lee.plm.factory.IOFactory;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Arrays;
 
 import static hua.lee.plm.engine.CommandServer.*;
@@ -19,14 +19,9 @@ import static hua.lee.plm.factory.CommandFactory.*;
  * @create 2018-10-30 18:23
  **/
 public class CommunicateEngine extends Thread {
-    private static OutputStream output;
-    private static InputStream input;
-
-    public CommunicateEngine() {
-        input = IOFactory.initPort().loadInputStream();
-        output = IOFactory.initPort().loadOutputStream();
-    }
-
+    //通讯线程运行状态
+    private static volatile boolean running = true;
+    private CommunicatePort commPort;
     //接收数据长度
     private int recvLen = 0;
     //读取字节数
@@ -43,9 +38,11 @@ public class CommunicateEngine extends Thread {
     private byte FRAME_TAIL = (byte) 0xFE;
     //最小数据帧长度
     private int FRAME_LEN_MIN = 9;
-    //通讯线程运行状态
-    private static volatile boolean running = true;
 
+    public CommunicateEngine(@NotNull CommunicatePort port) {
+        commPort = port;
+        running = true;
+    }
 
     @Override
     public void run() {
@@ -53,9 +50,9 @@ public class CommunicateEngine extends Thread {
 
             while (running) {
 
-                if (input.available() > 0) {
+                if (commPort.dataAvailable() > 0) {
                     //根据当前缓冲区剩余数据累加读取
-                    recvBytes = input.read(recvBuff, recvLen, bufferLen - recvLen);
+                    recvBytes = commPort.readData(recvBuff, recvLen, bufferLen - recvLen);
                     recvLen += recvBytes;
 
                     while (true) {
@@ -67,7 +64,8 @@ public class CommunicateEngine extends Thread {
                                 //包含完整数据帧
                                 if ((cmdLen = (FRAME_LEN_MIN + recvBuff[recvCMDStart + 4])) <= recvLen) {
                                     //CRC 校验 pass
-                                    if (recvBuff[recvCMDStart + cmdLen - 2] == CommandFactory.calCRC(recvBuff, recvCMDStart, cmdLen)) {
+                                    byte crc = CommandFactory.calCRC(recvBuff, recvCMDStart, cmdLen);
+                                    if (recvBuff[recvCMDStart + cmdLen - 2] == crc) {
                                         System.out.println("Received new Command data !!");
 
                                         receivedCommand(recvBuff, recvCMDStart, cmdLen);
@@ -77,8 +75,7 @@ public class CommunicateEngine extends Thread {
                                     } else {
                                         System.out.println("CRC is not correct !!");
                                         System.out.println("received CRC is " + recvBuff[recvCMDStart + cmdLen - 2]);
-                                        System.out.println("calc CRC is " + CommandFactory.calCRC(recvBuff, recvCMDStart, cmdLen));
-                                        System.out.println(Arrays.toString(recvBuff));
+                                        System.out.println("calc CRC is " + crc);
                                         byte[] nack = generateACKCMD(false, recvBuff[recvCMDStart + 2], recvBuff[recvCMDStart + 3]);
                                         sendList.add(new Command(nack));
                                         break;
@@ -146,10 +143,7 @@ public class CommunicateEngine extends Thread {
 
         System.out.println("send data ::: " + Arrays.toString(send));
 
-        if (output != null) {
-            output.write(send);
-            output.flush();
-        }
+        commPort.writeData(send);
     }
 
     /**
@@ -191,9 +185,7 @@ public class CommunicateEngine extends Thread {
 
     }
 
-    public void closePort() {
-        IOFactory.initPort().closePort();
+    public void killEngine() {
         running = false;
     }
-
 }

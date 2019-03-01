@@ -2,6 +2,7 @@ package hua.lee.plm.engine;
 
 import hua.lee.plm.bean.Command;
 import hua.lee.plm.bean.CommandRxWrapper;
+import hua.lee.plm.factory.IOFactory;
 
 import java.util.*;
 
@@ -15,14 +16,11 @@ import static hua.lee.plm.factory.CommandFactory.*;
  * @create 2019-01-07 18:20
  **/
 public class CommandServer {
-    public static LinkedList<Command> sendList = new LinkedList<>();
+    public static volatile LinkedList<Command> sendList = new LinkedList<>();
     public static LinkedList<CommandRxWrapper> dataList = new LinkedList<>();
-    public static Map<String, Command> ackList = new HashMap<>();
-
-    private CommunicateEngine ce;
-
+    public static volatile Map<String, Command> ackList = new HashMap<>();
     private static CommandRxWrapper wrapper = null;
-
+    private CommunicateEngine ce;
     private Timer heartBeat;
 
     static void notifyDataReceived(byte[] data) {
@@ -31,11 +29,6 @@ public class CommandServer {
         if (wrapper == null || !wrapper.isReceiving()) {
             wrapper = new CommandRxWrapper();
             wrapper.setCmdID(command.getCommandID());
-//            wrapper = PLMContext.cmdWrapper.get(command.getCommandID());
-//            if (wrapper == null) {
-//                System.out.println("undefined command : ID = " + command.getCommandID());
-//                return;
-//            }
         }
 
         if ((command.getCmdNum() + 1) == command.getCmdSum()) {
@@ -43,15 +36,11 @@ public class CommandServer {
             wrapper.addCommand(command);
             dataList.add(wrapper);
             wrapper.received();
-            wrapper.onRxDataRec();
         } else {
             if (wrapper.getCmdID().equals(command.getCommandID())) {
                 System.out.println("received multi cmd data ,and cmd id is " + command.getCommandID());
-
                 wrapper.addCommand(command);
             } else {
-
-                //wrapper = PLMContext.cmdWrapper.get(command.getCommandID());
                 if (wrapper == null) {
                     System.out.println("undefined command : ID = " + command.getCommandID());
                 } else {
@@ -68,16 +57,16 @@ public class CommandServer {
      * start communicate engine and heartbeat
      */
     public void init() {
-        ce = new CommunicateEngine();
+        ce = new CommunicateEngine(IOFactory.initPort());
         ce.start();
 
-        heartBeat = new Timer();
-        heartBeat.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                sendCommand(generateHeartBeatCommand());
-            }
-        }, 100, 6 * 1000);
+        // heartBeat = new Timer();
+        // heartBeat.schedule(new TimerTask() {
+        //     @Override
+        //     public void run() {
+        //         sendCommand(generateHeartBeatCommand());
+        //     }
+        // }, 100, 6 * 1000);
     }
 
     public void sendCommand(Command cmd) {
@@ -95,11 +84,12 @@ public class CommandServer {
      * close
      */
     public void close() {
-        if (ce != null){
-            ce.closePort();
+        if (ce != null) {
+            ce.killEngine();
         }
         if (heartBeat != null) {
             heartBeat.cancel();
         }
+        IOFactory.resetPort();
     }
 }

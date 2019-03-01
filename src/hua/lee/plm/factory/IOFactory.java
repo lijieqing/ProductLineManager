@@ -18,4 +18,8 @@ public final class IOFactory {
         }
         return port;
     }
+
+    public static void resetPort() {
+        port.closePort();
+    }
 }

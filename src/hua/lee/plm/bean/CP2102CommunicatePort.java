@@ -14,6 +14,28 @@ public class CP2102CommunicatePort extends CommunicatePort {
     private static SerialPort port;
 
     @Override
+    public int readData(byte[] recvBuffer, int off, int len) {
+        int val = -1;
+        try {
+            val=  inputStream.read(recvBuffer, off, len);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return val;
+    }
+
+    @Override
+    public void writeData(byte[] data) {
+        try {
+            outputStream.write(data);
+            outputStream.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
     public void initPort() {
         if (port != null) {
             System.out.println("已初始化串口：" + port.getName());
@@ -68,5 +90,16 @@ public class CP2102CommunicatePort extends CommunicatePort {
             port.close();
             port = null;
         }
+    }
+
+    @Override
+    public int dataAvailable() {
+        int available = -1;
+        try {
+            available = inputStream.available();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return available;
     }
 }

@@ -3,6 +3,7 @@ package hua.lee.plm.test;
 
 import hua.lee.plm.base.DataTypeUtil;
 import hua.lee.plm.base.RxDataCallback;
+import hua.lee.plm.engine.CommandServer;
 
 import java.io.*;
 import java.util.*;
@@ -19,10 +20,8 @@ public class Test implements RxDataCallback {
 
 
     public static void main(String[] args) {
-
-//        HashMap<String,Command> d = new HashMap<>();
-//        d.put("Aa",new Command(new byte[2]));
-//        d.put("BB",new Command(new byte[2]));
+        CommandServer server = new CommandServer();
+        server.init();
     }
 
     @Override
