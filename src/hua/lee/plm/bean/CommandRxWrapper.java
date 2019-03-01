@@ -14,15 +14,45 @@ import java.util.*;
  * @create 2019-01-08 14:50
  **/
 public class CommandRxWrapper extends CommandWrapper {
+    private static Map<String, List<RxDataCallback>> listenerMap = new HashMap<>();
     private byte[] data;
     private boolean receiving = true;
-
-    private static Map<String, List<RxDataCallback>> listenerMap = new HashMap<>();
 
 
     public CommandRxWrapper() {
         cmdList = new LinkedList<>();
     }
+
+    /**
+     * 注册指定 cmd id 的数据接收器
+     *
+     * @param cmdID    命令 ID
+     * @param callback 回调
+     */
+    public static void addRxDataCallBack(@NotNull String cmdID, @NotNull RxDataCallback callback) {
+        List<RxDataCallback> callbackList = listenerMap.get(cmdID);
+        if (callbackList != null) {
+            callbackList.add(callback);
+        } else {
+            callbackList = new LinkedList<>();
+            callbackList.add(callback);
+            listenerMap.put(cmdID, callbackList);
+        }
+    }
+
+    /**
+     * 移除指定 cmd ID 的监听
+     *
+     * @param cmdID    cmd ID
+     * @param callback 回调
+     */
+    public static void removeRxDataCallBack(@NotNull String cmdID, @NotNull RxDataCallback callback) {
+        List<RxDataCallback> callbackList = listenerMap.get(cmdID);
+        if (callbackList != null) {
+            callbackList.remove(callback);
+        }
+    }
+
 
     public boolean isReceiving() {
         return receiving;
@@ -30,6 +60,7 @@ public class CommandRxWrapper extends CommandWrapper {
 
     public void received() {
         receiving = false;
+        onRxDataRec();
     }
 
     public String getCmdID() {
@@ -52,19 +83,7 @@ public class CommandRxWrapper extends CommandWrapper {
         cmdList.add(cmd);
     }
 
-    public static void addRxDataCallBack(@NotNull String cmdID, @NotNull RxDataCallback callback) {
-        List<RxDataCallback> callbackList = listenerMap.computeIfAbsent(cmdID, k -> new LinkedList<>());
-        callbackList.add(callback);
-    }
-
-    public static void removeRxDataCallBack(@NotNull String cmdID, @NotNull RxDataCallback callback) {
-        List<RxDataCallback> callbackList = listenerMap.get(cmdID);
-        if (callbackList != null) {
-            callbackList.remove(callback);
-        }
-    }
-
-    public void onRxDataRec() {
+    private void onRxDataRec() {
         loadCommandData();
         List<RxDataCallback> callList = listenerMap.get(cmdID);
         if (callList != null) {
@@ -89,10 +108,13 @@ public class CommandRxWrapper extends CommandWrapper {
         int curPos = 0;
 
         for (int i = 0; i < cmdList.size(); i++) {
-            temp = map.get(i).getData();
-            if (temp != null) {
-                System.arraycopy(temp, 0, data, curPos, temp.length);
-                curPos += temp.length;
+            Command cmd = map.get(i);
+            if (cmd != null) {
+                temp = cmd.getData();
+                if (temp != null) {
+                    System.arraycopy(temp, 0, data, curPos, temp.length);
+                    curPos += temp.length;
+                }
             }
         }
     }
