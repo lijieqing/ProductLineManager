@@ -3,6 +3,8 @@ package hua.lee.plm.test;
 
 import hua.lee.plm.base.DataTypeUtil;
 import hua.lee.plm.base.RxDataCallback;
+import hua.lee.plm.bean.CommandRxWrapper;
+import hua.lee.plm.bean.CommandTxWrapper;
 import hua.lee.plm.engine.CommandServer;
 
 import java.io.*;
@@ -22,6 +24,26 @@ public class Test implements RxDataCallback {
     public static void main(String[] args) {
         CommandServer server = new CommandServer();
         server.init();
+
+
+        CommandRxWrapper.addRxDataCallBack("1408", new RxDataCallback() {
+            int fileCount = 0;
+            @Override
+            public void notifyDataReceived(String cmdID, byte[] data) {
+                fileCount++;
+                CommandTxWrapper tx = new CommandTxWrapper("1488",data.length+"|"+fileCount,CommandTxWrapper.DATA_STRING);
+                tx.send();
+            }
+        });
+        CommandRxWrapper.addRxDataCallBack("1475", new RxDataCallback() {
+            int strCount = 0;
+            @Override
+            public void notifyDataReceived(String cmdID, byte[] data) {
+                strCount++;
+                CommandTxWrapper tx = new CommandTxWrapper("1499",new String(data)+"|"+strCount,CommandTxWrapper.DATA_STRING);
+                tx.send();
+            }
+        });
     }
 
     @Override

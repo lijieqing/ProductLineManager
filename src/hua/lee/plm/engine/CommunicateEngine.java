@@ -105,7 +105,10 @@ public class CommunicateEngine extends Thread {
                 } else {
                     //处理发射缓冲区
                     while (sendList.size() > 0) {
-                        sendCommand(sendList.pop());
+                        Command cmd = sendList.poll();
+                        if (cmd != null) {
+                            sendCommand(cmd);
+                        }
                     }
 
                 }

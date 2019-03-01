@@ -5,6 +5,8 @@ import hua.lee.plm.bean.CommandRxWrapper;
 import hua.lee.plm.factory.IOFactory;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static hua.lee.plm.factory.CommandFactory.*;
 
@@ -16,9 +18,9 @@ import static hua.lee.plm.factory.CommandFactory.*;
  * @create 2019-01-07 18:20
  **/
 public class CommandServer {
-    public static volatile LinkedList<Command> sendList = new LinkedList<>();
+    public static volatile ConcurrentLinkedQueue<Command> sendList = new ConcurrentLinkedQueue<>();
     public static LinkedList<CommandRxWrapper> dataList = new LinkedList<>();
-    public static volatile Map<String, Command> ackList = new HashMap<>();
+    public static volatile ConcurrentHashMap<String, Command> ackList = new ConcurrentHashMap<>();
     private static CommandRxWrapper wrapper = null;
     private CommunicateEngine ce;
     private Timer heartBeat;
@@ -74,10 +76,6 @@ public class CommandServer {
             sendList.add(cmd);
         }
 
-    }
-
-    public void sendCommandFirst(Command cmd) {
-        sendList.addFirst(cmd);
     }
 
     /**
