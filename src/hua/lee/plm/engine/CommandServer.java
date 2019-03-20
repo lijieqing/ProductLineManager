@@ -1,5 +1,6 @@
 package hua.lee.plm.engine;
 
+import hua.lee.plm.bean.CP210xCommand;
 import hua.lee.plm.bean.Command;
 import hua.lee.plm.bean.CommandRxWrapper;
 import hua.lee.plm.factory.IOFactory;
@@ -26,33 +27,40 @@ public class CommandServer {
     private Timer heartBeat;
 
     static void notifyDataReceived(byte[] data) {
-        Command command = new Command(data);
-
+        CP210xCommand command = new CP210xCommand(data);
+        //如果是 null 或者 未处在接收状态
         if (wrapper == null || !wrapper.isReceiving()) {
-            wrapper = new CommandRxWrapper();
+            if (wrapper == null) {
+                wrapper = new CommandRxWrapper();
+            }
+            wrapper.startReceiving();
             wrapper.setCmdID(command.getCommandID());
         }
-
-        if ((command.getCmdNum() + 1) == command.getCmdSum()) {
-            System.out.println("received last frame cmd data ,and cmd is is " + command.getCommandID());
-            wrapper.addCommand(command);
-            dataList.add(wrapper);
-            wrapper.received();
-        } else {
-            if (wrapper.getCmdID().equals(command.getCommandID())) {
-                System.out.println("received multi cmd data ,and cmd id is " + command.getCommandID());
+        //判断 cmd ID 是否一致
+        if (wrapper.getCmdID().equals(command.getCommandID())) {
+            //如果是最后一帧，接收完毕
+            if ((command.getCmdNum() + 1) == command.getCmdSum()) {
                 wrapper.addCommand(command);
+                wrapper.received();
             } else {
-                if (wrapper == null) {
-                    System.out.println("undefined command : ID = " + command.getCommandID());
-                } else {
-                    System.out.println("received new cmd id " + command.getCommandID());
-                    wrapper.addCommand(command);
-                    wrapper.setCmdID(command.getCommandID());
-                }
+                //继续接收
+                wrapper.addCommand(command);
+            }
+        } else {
+            // cmd ID 不一致，清空集合，重新接收
+            wrapper.clearCommands();
+            wrapper.startReceiving();
+            wrapper.setCmdID(command.getCommandID());
+
+            //如果是最后一帧，或者只有一帧，接收完毕
+            if ((command.getCmdNum() + 1) == command.getCmdSum()) {
+                wrapper.addCommand(command);
+                wrapper.received();
+            } else {
+                //继续接收
+                wrapper.addCommand(command);
             }
         }
-
     }
 
     /**

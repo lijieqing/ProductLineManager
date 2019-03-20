@@ -2,6 +2,7 @@ package hua.lee.plm.test;
 
 
 import hua.lee.plm.base.DataTypeUtil;
+import hua.lee.plm.base.PLMContext;
 import hua.lee.plm.base.RxDataCallback;
 import hua.lee.plm.bean.CommandRxWrapper;
 import hua.lee.plm.bean.CommandTxWrapper;
@@ -11,6 +12,7 @@ import java.io.*;
 import java.util.*;
 
 import static hua.lee.plm.base.DataTypeUtil.*;
+import static hua.lee.plm.base.PLMContext.TYPE_CTL;
 
 /**
  * test
@@ -26,24 +28,44 @@ public class Test implements RxDataCallback {
         server.init();
 
 
-        CommandRxWrapper.addRxDataCallBack("1408", new RxDataCallback() {
+        CommandRxWrapper.addRxDataCallBack("1111", new RxDataCallback() {
             int fileCount = 0;
+
             @Override
             public void notifyDataReceived(String cmdID, byte[] data) {
                 fileCount++;
-                CommandTxWrapper tx = new CommandTxWrapper("1488",data.length+"|"+fileCount,CommandTxWrapper.DATA_STRING);
-                tx.send();
+                System.out.println(cmdID + "|1111 received 1111|" + new String(data));
             }
         });
-        CommandRxWrapper.addRxDataCallBack("1475", new RxDataCallback() {
+        CommandRxWrapper.addRxDataCallBack("2222", new RxDataCallback() {
             int strCount = 0;
+
             @Override
             public void notifyDataReceived(String cmdID, byte[] data) {
                 strCount++;
-                CommandTxWrapper tx = new CommandTxWrapper("1499",new String(data)+"|"+strCount,CommandTxWrapper.DATA_STRING);
-                tx.send();
+                System.out.println(cmdID + "|2222 received 2222|" + new String(data));
             }
         });
+        new Thread() {
+            int count = 0;
+
+            @Override
+            public void run() {
+                while (true) {
+                    CommandTxWrapper txFile = CommandTxWrapper.initTX("14c0", "字符串Send测试" + count,null, CommandTxWrapper.DATA_STRING, TYPE_CTL);
+                    txFile.send();
+                    PLMContext.sleep(1500);
+                    CommandTxWrapper txString = CommandTxWrapper.initTX("4444", "/Users/lijie/Desktop/key22.bin",null, CommandTxWrapper.DATA_FILE,TYPE_CTL);
+                    txString.send();
+                    PLMContext.sleep(10 * 1000);
+                    count++;
+                }
+            }
+        }.start();
+
+        while (true) {
+
+        }
     }
 
     @Override
@@ -53,6 +75,23 @@ public class Test implements RxDataCallback {
 
     @org.junit.Test
     public void testHdcp() throws IOException {
+        String s = "00541  ";
+        byte[] ss = s.getBytes();
+
+        System.out.println(Arrays.toString(ss));
+
+        int a = 0b00000011;
+        System.out.println(a);
+        System.out.println(a >> 4);
+        System.out.println(a & 0b00001111);
+    }
+
+    @org.junit.Test
+    public void testBCC() {
+        int a = 0x30^0x31^0x30^0x32^0x31^0x32^0x30^0x30^0x03;
+
+        System.out.println(a);
+
 
     }
 
@@ -121,8 +160,9 @@ public class Test implements RxDataCallback {
 
         /**
          * 初始化
-         * @param datas 完整的 key 文件字节数据
-         * @param startPos  key item 起始位置
+         *
+         * @param datas    完整的 key 文件字节数据
+         * @param startPos key item 起始位置
          */
         private void initItem(byte[] datas, int startPos) {
             int curPos = startPos;
@@ -163,6 +203,7 @@ public class Test implements RxDataCallback {
 
         /**
          * key item 分类写入
+         *
          * @param datas 完整的 key 文件字节数据
          */
         void itemSplit(byte[] datas) {

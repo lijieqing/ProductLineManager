@@ -2,6 +2,8 @@ package hua.lee.plm.bean;
 
 import com.sun.istack.internal.NotNull;
 import hua.lee.plm.base.CommandWrapper;
+import hua.lee.plm.base.GlobalCommandReceiveListener;
+import hua.lee.plm.base.PLMContext;
 import hua.lee.plm.base.RxDataCallback;
 import hua.lee.plm.vo.CommandVO;
 
@@ -16,12 +18,15 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  **/
 public class CommandRxWrapper extends CommandWrapper {
     private static Map<String, List<RxDataCallback>> listenerMap = new HashMap<>();
+    private static GlobalCommandReceiveListener globalReceiveListener = null;
     private byte[] data;
     private boolean receiving = true;
+    private List<CP210xCommand> cmdList;
+    private String cmdID;
 
 
     public CommandRxWrapper() {
-        cmdList = new ConcurrentLinkedQueue<>();
+        cmdList = new LinkedList<>();
     }
 
     /**
@@ -54,9 +59,21 @@ public class CommandRxWrapper extends CommandWrapper {
         }
     }
 
+    /**
+     * 注册全局数据接收，对于所有的数据传输都会调用此接口
+     *
+     * @param gls 全局监听器
+     */
+    public static void addGlobalRXListener(@NotNull GlobalCommandReceiveListener gls) {
+        globalReceiveListener = gls;
+    }
 
     public boolean isReceiving() {
         return receiving;
+    }
+
+    public void startReceiving() {
+        receiving = true;
     }
 
     public void received() {
@@ -72,15 +89,8 @@ public class CommandRxWrapper extends CommandWrapper {
         this.cmdID = cmdID;
     }
 
-    public CommandVO getCmdVO() {
-        return cmdVO;
-    }
 
-    public void setCmdVO(CommandVO cmdVO) {
-        this.cmdVO = cmdVO;
-    }
-
-    public void addCommand(Command cmd) {
+    public void addCommand(CP210xCommand cmd) {
         cmdList.add(cmd);
     }
 
@@ -93,30 +103,48 @@ public class CommandRxWrapper extends CommandWrapper {
             }
 
         }
+        if (globalReceiveListener != null) {
+            globalReceiveListener.onRXWrapperReceived(cmdID, data);
+        }
+        cmdList.clear();
     }
 
     private void loadCommandData() {
         int len = 0;
-        Map<Integer, Command> map = new HashMap<>();
-        for (Command command : cmdList) {
-            len += command.getDataLen();
+        Map<Integer, CP210xCommand> map = new HashMap<>();
+        for (CP210xCommand command : cmdList) {
             map.put((int) command.getCmdNum(), command);
         }
+        //判断接受帧数与数据帧数是否一致
+        int recvSize = map.keySet().size();
+        int targetSum = cmdList.get(0).getCmdSum();
+        if (recvSize != targetSum) {
+            PLMContext.d("UsbCommTask", recvSize + " <= received |||| target => " + targetSum);
+        } else {
+            for (Integer integer : map.keySet()) {
+                PLMContext.d("UsbCommTask", integer + " <= key |||| target => " + map.get(integer));
+                len += map.get(integer).getDataLen();
+            }
+            data = new byte[len];
+            byte[] temp;
+            int curPos = 0;
 
-        data = new byte[len];
-        byte[] temp;
-        int curPos = 0;
-
-        for (int i = 0; i < cmdList.size(); i++) {
-            Command cmd = map.get(i);
-            if (cmd != null) {
-                temp = cmd.getData();
-                if (temp != null) {
-                    System.arraycopy(temp, 0, data, curPos, temp.length);
-                    curPos += temp.length;
+            for (int i = 0; i < cmdList.size(); i++) {
+                CP210xCommand cmd = map.get(i);
+                if (cmd != null) {
+                    temp = cmd.getData();
+                    if (temp != null) {
+                        System.arraycopy(temp, 0, data, curPos, temp.length);
+                        curPos += temp.length;
+                    }
                 }
             }
         }
-        cmdList.clear();
+    }
+
+    public void clearCommands() {
+        if (cmdList != null) {
+            cmdList.clear();
+        }
     }
 }

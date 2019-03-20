@@ -37,8 +37,8 @@ public class HDCPTest {
             System.out.println("received cmd id = " + cmdID);
             System.out.println("received data  = " + new String(data));
             if (cmdID.equals("1409")) {
-                CommandTxWrapper txWrapper = new CommandTxWrapper(cmdID, "/Users/lijie/Desktop/key22.bin", CommandTxWrapper.DATA_FILE);
-                txWrapper.send();
+                //CommandTxWrapper txWrapper = new CommandTxWrapper(cmdID, "/Users/lijie/Desktop/key22.bin", CommandTxWrapper.DATA_FILE);
+                //txWrapper.send();
             }
         }
 

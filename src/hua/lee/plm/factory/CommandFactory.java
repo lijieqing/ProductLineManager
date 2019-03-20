@@ -63,7 +63,7 @@ public final class CommandFactory {
             CommandRxWrapper wrapper = new CommandRxWrapper();
             cmdMap.put(commandVO.getCmd_ID().toUpperCase(), commandVO);
 
-            wrapper.setCmdVO(commandVO);
+            //wrapper.setCmdVO(commandVO);
             cmdWrapper.put(commandVO.getCmd_ID().toUpperCase(), wrapper);
         }
         return res;
