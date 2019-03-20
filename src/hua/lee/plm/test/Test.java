@@ -6,7 +6,6 @@ import hua.lee.plm.base.PLMContext;
 import hua.lee.plm.base.RxDataCallback;
 import hua.lee.plm.bean.CommandRxWrapper;
 import hua.lee.plm.bean.CommandTxWrapper;
-import hua.lee.plm.engine.CommandServer;
 
 import java.io.*;
 import java.util.*;
@@ -24,8 +23,6 @@ public class Test implements RxDataCallback {
 
 
     public static void main(String[] args) {
-        CommandServer server = new CommandServer();
-        server.init();
 
 
         CommandRxWrapper.addRxDataCallBack("1111", new RxDataCallback() {
@@ -52,10 +49,10 @@ public class Test implements RxDataCallback {
             @Override
             public void run() {
                 while (true) {
-                    CommandTxWrapper txFile = CommandTxWrapper.initTX("14c0", "字符串Send测试" + count,null, CommandTxWrapper.DATA_STRING, TYPE_CTL);
+                    CommandTxWrapper txFile = CommandTxWrapper.initTX("14c0", "字符串Send测试" + count, null, CommandTxWrapper.DATA_STRING, TYPE_CTL);
                     txFile.send();
                     PLMContext.sleep(1500);
-                    CommandTxWrapper txString = CommandTxWrapper.initTX("4444", "/Users/lijie/Desktop/key22.bin",null, CommandTxWrapper.DATA_FILE,TYPE_CTL);
+                    CommandTxWrapper txString = CommandTxWrapper.initTX("4444", "/Users/lijie/Desktop/key22.bin", null, CommandTxWrapper.DATA_FILE, TYPE_CTL);
                     txString.send();
                     PLMContext.sleep(10 * 1000);
                     count++;
@@ -88,7 +85,7 @@ public class Test implements RxDataCallback {
 
     @org.junit.Test
     public void testBCC() {
-        int a = 0x30^0x31^0x30^0x32^0x31^0x32^0x30^0x30^0x03;
+        int a = 0x30 ^ 0x31 ^ 0x30 ^ 0x32 ^ 0x31 ^ 0x32 ^ 0x30 ^ 0x30 ^ 0x03;
 
         System.out.println(a);
 

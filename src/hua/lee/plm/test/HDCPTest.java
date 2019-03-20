@@ -20,13 +20,7 @@ import java.util.Date;
 public class HDCPTest {
 
     public static void main(String[] args) {
-        MyCallback callback = new MyCallback();
 
-        PLMContext.commandServer.init();
-
-        CommandRxWrapper.addRxDataCallBack("1409", callback);
-        CommandRxWrapper.addRxDataCallBack("1411", callback);
-        CommandRxWrapper.addRxDataCallBack("1475", callback);
 
     }
 

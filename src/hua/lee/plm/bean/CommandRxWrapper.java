@@ -1,14 +1,11 @@
 package hua.lee.plm.bean;
 
 import com.sun.istack.internal.NotNull;
-import hua.lee.plm.base.CommandWrapper;
 import hua.lee.plm.base.GlobalCommandReceiveListener;
 import hua.lee.plm.base.PLMContext;
 import hua.lee.plm.base.RxDataCallback;
-import hua.lee.plm.vo.CommandVO;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Command Wrapper
@@ -16,7 +13,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * @author lijie
  * @create 2019-01-08 14:50
  **/
-public class CommandRxWrapper extends CommandWrapper {
+public class CommandRxWrapper {
     private static Map<String, List<RxDataCallback>> listenerMap = new HashMap<>();
     private static GlobalCommandReceiveListener globalReceiveListener = null;
     private byte[] data;

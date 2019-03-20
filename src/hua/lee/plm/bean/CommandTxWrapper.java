@@ -2,7 +2,6 @@ package hua.lee.plm.bean;
 
 import com.sun.istack.internal.NotNull;
 import com.sun.istack.internal.Nullable;
-import hua.lee.plm.base.CommandWrapper;
 import hua.lee.plm.base.PLMContext;
 
 import java.io.File;
@@ -17,7 +16,7 @@ import java.util.LinkedList;
  * @author lijie
  * @create 2019-02-21 13:41
  **/
-public class CommandTxWrapper extends CommandWrapper {
+public class CommandTxWrapper {
     private static final String TAG = "CommandTxWrapper";
     public static final int DATA_FILE = 0;
     public static final int DATA_STRING = 1;
@@ -125,20 +124,28 @@ public class CommandTxWrapper extends CommandWrapper {
                 while (cmdList.size() > 0) {
                     CP210xCommand cmd = cmdList.poll();
                     if (cmd != null) {
-                        PLMContext.d(TAG,cmd.toString());
+                        PLMContext.d(TAG, cmd.toString());
                         if (PLMContext.cp210xTxQueue != null) {
                             PLMContext.cp210xTxQueue.add(cmd);
-                            PLMContext.sleep(1000);
+                            PLMContext.sleep(300);
                             //重发机制
+                            int retry = 0;
                             for (int i = 0; i < 3; i++) {
                                 CP210xCommand ack = PLMContext.ackMap.get(cmd.getCommandID());
                                 if (ack != null) {
                                     PLMContext.ackMap.remove(cmd.getCommandID());
                                     break;
                                 } else {
+                                    retry++;
                                     PLMContext.cp210xTxQueue.add(cmd);
                                     PLMContext.sleep(1000);
                                 }
+                            }
+                            //三次都没有收到回复，取消后续发送
+                            if (retry == 3) {
+                                PLMContext.d(TAG, "we retry " + retry + " times,but we did not received ack back，do we cancel Tx");
+                                cmdList.clear();
+                                break;
                             }
                         }
                     }

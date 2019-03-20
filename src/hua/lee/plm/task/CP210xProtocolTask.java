@@ -1,4 +1,4 @@
-package hua.lee.plm.engine;
+package hua.lee.plm.task;
 
 
 import com.sun.istack.internal.NotNull;
@@ -7,7 +7,6 @@ import hua.lee.plm.bean.CP2102CommunicatePort;
 import hua.lee.plm.bean.CP210xCommand;
 import hua.lee.plm.bean.CommandRxWrapper;
 
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static hua.lee.plm.base.PLMContext.*;

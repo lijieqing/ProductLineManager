@@ -1,4 +1,4 @@
-package hua.lee.plm.engine;
+package hua.lee.plm.task;
 
 import hua.lee.plm.base.PLMContext;
 import hua.lee.plm.bean.CP210xCommand;
@@ -26,16 +26,21 @@ public class CP210xCommTask extends Thread {
     @Override
     public void run() {
         if (cp210xUsb == null) {
-            throw new RuntimeException("CP210x USB is null");
+            System.out.println("CP210x USB is null");
         }
         try {
             while (running && !stop) {
-                PLMContext.d(TAG, "cp210xUsb " + cp210xUsb);
+
+                //System.out.println("cp210xUsb " + cp210xUsb);
+
                 if (cp210xUsb != null) {
-                    int aval = cp210xUsb.loadInputStream().read(tempBuffer);
-                    PLMContext.d(TAG, "val " + aval);
-                    if (aval > 0) {
+                    if (cp210xUsb.loadInputStream().available() > 0) {
+
+                        int aval = cp210xUsb.loadInputStream().read(tempBuffer);
+                        PLMContext.d(TAG, "val " + aval);
+
                         PLMContext.d(TAG, aval + " <== len temp recv data ==> " + Arrays.toString(tempBuffer));
+
                         byte[] realBytes = new byte[aval];
                         System.arraycopy(tempBuffer, 0, realBytes, 0, aval);
                         Arrays.fill(tempBuffer, (byte) 0);
@@ -84,9 +89,9 @@ public class CP210xCommTask extends Thread {
                         }
 
                     } else {
-                        PLMContext.d(TAG, "发送队列 " + cp210xTxQueue);
+                        //System.out.println("发送队列 " + cp210xTxQueue);
                         if (cp210xTxQueue != null) {
-                            PLMContext.d(TAG, "发送队列 大小为 " + cp210xTxQueue.size());
+                            //PLMContext.d(TAG, "发送队列 大小为 " + cp210xTxQueue.size());
                             while (cp210xTxQueue.size() > 0) {
                                 CP210xCommand cmd = cp210xTxQueue.poll();
                                 if (cmd != null) {
