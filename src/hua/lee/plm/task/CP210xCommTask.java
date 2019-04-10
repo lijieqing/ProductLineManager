@@ -79,6 +79,11 @@ public class CP210xCommTask extends Thread {
                                             cmdStart = 0;
                                             break;
                                         }
+                                    } else {
+                                        //不完整，保留碎片
+                                        System.arraycopy(recvBuffer, cmdStart, recvBuffer, 0, recvLen);
+                                        cmdStart = 0;
+                                        break;
                                     }
 
                                 } else {
@@ -91,8 +96,8 @@ public class CP210xCommTask extends Thread {
                     } else {
                         //System.out.println("发送队列 " + cp210xTxQueue);
                         if (cp210xTxQueue != null) {
-                            //PLMContext.d(TAG, "发送队列 大小为 " + cp210xTxQueue.size());
                             while (cp210xTxQueue.size() > 0) {
+                                PLMContext.d(TAG, "发送队列 大小为 " + cp210xTxQueue.size());
                                 CP210xCommand cmd = cp210xTxQueue.poll();
                                 if (cmd != null) {
                                     cp210xUsb.loadOutputStream().write(cmd.toByteArray());

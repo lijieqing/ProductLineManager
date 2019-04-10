@@ -127,26 +127,34 @@ public class CommandTxWrapper {
                         PLMContext.d(TAG, cmd.toString());
                         if (PLMContext.cp210xTxQueue != null) {
                             PLMContext.cp210xTxQueue.add(cmd);
-                            PLMContext.sleep(300);
-                            //重发机制
-                            int retry = 0;
-                            for (int i = 0; i < 3; i++) {
-                                CP210xCommand ack = PLMContext.ackMap.get(cmd.getCommandID());
-                                if (ack != null) {
-                                    PLMContext.ackMap.remove(cmd.getCommandID());
-                                    break;
-                                } else {
-                                    retry++;
-                                    PLMContext.cp210xTxQueue.add(cmd);
-                                    PLMContext.sleep(1000);
-                                }
-                            }
-                            //三次都没有收到回复，取消后续发送
-                            if (retry == 3) {
-                                PLMContext.d(TAG, "we retry " + retry + " times,but we did not received ack back，do we cancel Tx");
-                                cmdList.clear();
+                            PLMContext.sleep(1500);
+                            CP210xCommand ack = PLMContext.ackMap.get(cmd.getCommandID());
+                            if (ack != null) {
+                                PLMContext.d(TAG,"we received ACK back");
+                                PLMContext.ackMap.remove(cmd.getCommandID());
+                            }else {
+                                PLMContext.d(TAG,"we do not receive ACK");
                                 break;
                             }
+                            // //重发机制
+                            // int retry = 0;
+                            // for (int i = 0; i < 3; i++) {
+                            //     CP210xCommand ack = USBContext.ackMap.get(cmd.getCommandID());
+                            //     if (ack != null) {
+                            //         USBContext.ackMap.remove(cmd.getCommandID());
+                            //         break;
+                            //     } else {
+                            //         retry++;
+                            //         USBContext.cp210xTxQueue.add(cmd);
+                            //         SystemClock.sleep(1000);
+                            //     }
+                            // }
+                            // //三次都没有收到回复，取消后续发送
+                            // if (retry == 3) {
+                            //     Log.d(TAG, "we retry " + retry + " times,but we did not received ack back，do we cancel Tx");
+                            //     cmdList.clear();
+                            //     break;
+                            // }
                         }
                     }
                 }

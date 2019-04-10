@@ -137,6 +137,7 @@ public class CommandRxWrapper {
                 }
             }
         }
+        PLMContext.d("UsbCommTask", data.length + " <= data len |||| str content => " + new String(data));
     }
 
     public void clearCommands() {

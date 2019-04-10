@@ -20,8 +20,10 @@ import java.util.Date;
 public class HDCPTest {
 
     public static void main(String[] args) {
-
-
+        CommandTxWrapper txWrapper = CommandTxWrapper.initTX("142c",
+                "0", null,
+                CommandTxWrapper.DATA_STRING, PLMContext.TYPE_CTL);
+        txWrapper.send();
     }
 
     static class MyCallback implements RxDataCallback {

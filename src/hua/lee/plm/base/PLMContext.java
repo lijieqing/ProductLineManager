@@ -47,4 +47,31 @@ public final class PLMContext {
     public static void d(String tag, String msg) {
         System.out.println(tag + " | " + msg);
     }
+
+    public static void initServer() {
+        if (cp210xCommTask == null && cp210xProtocolTask == null) {
+            cp210xRxQueue = new ArrayBlockingQueue<>(1024);
+            cp210xTxQueue = new ArrayBlockingQueue<>(1024);
+
+            cp210xProtocolTask = new CP210xProtocolTask();
+            cp210xCommTask = new CP210xCommTask();
+
+            cp210xProtocolTask.taskInit();
+            cp210xProtocolTask.start();
+
+            cp210xCommTask.initTask();
+            cp210xCommTask.start();
+        }
+    }
+
+    public static void closeServer() {
+        if (cp210xCommTask != null) {
+            cp210xCommTask.killComm();
+            cp210xCommTask = null;
+        }
+        if (cp210xProtocolTask != null) {
+            cp210xProtocolTask.killProtocol();
+            cp210xProtocolTask = null;
+        }
+    }
 }

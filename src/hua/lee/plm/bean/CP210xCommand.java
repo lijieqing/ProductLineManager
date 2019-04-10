@@ -85,7 +85,17 @@ public class CP210xCommand {
      */
     public static CP210xCommand generateACKCMD(boolean isAck, String cmdID) {
         if (cmdID.length() != 4) {
-            throw new IllegalArgumentException("cmd id len != 4, cmdid = " + cmdID);
+            if (cmdID.length() < 4) {
+                int add = 4 - cmdID.length();
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < add; i++) {
+                    sb.append("0");
+                }
+                sb.append(cmdID);
+                cmdID = sb.toString();
+            } else {
+                throw new IllegalArgumentException("cmd id len != 4, cmdid = " + cmdID);
+            }
         }
         byte[] ack = new byte[9];
         ack[0] = (byte) 0x79;

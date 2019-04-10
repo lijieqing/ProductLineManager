@@ -19,27 +19,67 @@ public class CommTest {
 
     public static void main(String[] args) {
         initServer();
+
+//        writeKey();
+//        activeKey();
+
+//        switchSources();
+//        readIP();
+
+        readNode();
+    }
+
+    private static void readNode() {
         PLMContext.sleep(3 * 1000);
-        CommandTxWrapper txWrapper = CommandTxWrapper.initTX("1409",
-                "/Users/lijie/Desktop/key22.bin", null,
-                CommandTxWrapper.DATA_FILE, PLMContext.TYPE_CTL);
+        CommandTxWrapper txWrapper = CommandTxWrapper.initTX("14E3",
+                "3,8", null,
+                CommandTxWrapper.DATA_STRING, PLMContext.TYPE_CTL);
+        txWrapper.send();
+    }
+
+    private static void switchSources() {
+        PLMContext.sleep(3 * 1000);
+        CommandTxWrapper txWrapper = CommandTxWrapper.initTX("112d",
+                "0", null,
+                CommandTxWrapper.DATA_STRING, PLMContext.TYPE_CTL);
+        txWrapper.send();
+        PLMContext.sleep(2 * 1000);
+        txWrapper = CommandTxWrapper.initTX("142a",
+                "MITEST_24G_1", null,
+                CommandTxWrapper.DATA_STRING, PLMContext.TYPE_CTL);
         txWrapper.send();
 
 
     }
 
-    private static void initServer() {
-        cp210xRxQueue = new ArrayBlockingQueue<>(1024);
-        cp210xTxQueue = new ArrayBlockingQueue<>(1024);
 
-        cp210xProtocolTask = new CP210xProtocolTask();
-        cp210xCommTask = new CP210xCommTask();
+    private static void writeKey(){
+        PLMContext.sleep(3 * 1000);
+        CommandTxWrapper txWrapper = CommandTxWrapper.initTX("1408",
+                "/Users/lijie/Desktop/hk14.bin", null,
+                CommandTxWrapper.DATA_FILE, PLMContext.TYPE_CTL);
+        txWrapper.send();
 
-        cp210xProtocolTask.taskInit();
-        cp210xProtocolTask.start();
+        PLMContext.sleep(5000);
 
-        cp210xCommTask.initTask();
-        cp210xCommTask.start();
+        txWrapper = CommandTxWrapper.initTX("1410",
+                "/Users/lijie/Desktop/hk22.bin", null,
+                CommandTxWrapper.DATA_FILE, PLMContext.TYPE_CTL);
 
+        txWrapper.send();
+    }
+    private static void activeKey(){
+        PLMContext.sleep(3 * 1000);
+        CommandTxWrapper txWrapper = CommandTxWrapper.initTX("140F",
+                "", null,
+                CommandTxWrapper.DATA_STRING, PLMContext.TYPE_CTL);
+        txWrapper.send();
+    }
+    private static void readIP(){
+        PLMContext.sleep(3 * 1000);
+        CommandTxWrapper txWrapper = CommandTxWrapper.initTX("142c",
+                "0", null,
+                CommandTxWrapper.DATA_STRING, PLMContext.TYPE_CTL);
+        txWrapper.send();
     }
 }
