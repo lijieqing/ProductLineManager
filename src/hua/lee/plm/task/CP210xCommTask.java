@@ -50,6 +50,7 @@ public class CP210xCommTask extends Thread {
                         PLMContext.d(TAG, "received Len = " + recvLen);
                         PLMContext.d(TAG, "received recvBuffer = " + Arrays.toString(recvBuffer));
 
+                        int totalLen = recvLen;
                         while (true) {
                             if (recvLen < 9) {
                                 System.arraycopy(recvBuffer, cmdStart, recvBuffer, 0, recvLen);
@@ -57,7 +58,7 @@ public class CP210xCommTask extends Thread {
                                 break;
                             } else {
                                 if (recvBuffer[cmdStart] == 0x79) {
-                                    if (cmdStart + 4 < recvLen) {
+                                    if (cmdStart + 4 < totalLen) {
                                         //计算数据帧长度
                                         int frameLen = recvBuffer[cmdStart + 4] + 9;
                                         int endPos = cmdStart + frameLen - 1;

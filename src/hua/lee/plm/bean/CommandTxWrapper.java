@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.LinkedList;
 
 /**
@@ -204,14 +205,15 @@ public class CommandTxWrapper {
             }
             byte[] data;
             CP210xCommand cmd;
+            int len;
             for (int i = 0; i < sum; i++) {
                 if (i < (sum - 1)) {
-                    data = new byte[64];
-                    System.arraycopy(datas, i * 64, data, 0, 64);
+                    len = 64;
                 } else {
-                    data = new byte[suffix];
-                    System.arraycopy(datas, (i - 1) * 64, data, 0, suffix);
+                    len = suffix;
                 }
+                data = new byte[len];
+                System.arraycopy(datas, i * 64, data, 0, len);
                 cmd = CP210xCommand.generateCommandBySource(data, (byte) i, (byte) sum, cmd_left, cmd_right);
                 cmdList.add(cmd);
             }
