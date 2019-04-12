@@ -20,6 +20,7 @@ public class CommandRxWrapper {
     private boolean receiving = true;
     private List<CP210xCommand> cmdList;
     private String cmdID;
+    private static final String TAG = "CommandRxWrapper";
 
 
     public CommandRxWrapper() {
@@ -88,6 +89,7 @@ public class CommandRxWrapper {
 
 
     public void addCommand(CP210xCommand cmd) {
+        PLMContext.d(TAG, cmd.toString());
         cmdList.add(cmd);
     }
 
@@ -116,10 +118,10 @@ public class CommandRxWrapper {
         int recvSize = map.keySet().size();
         int targetSum = cmdList.get(0).getCmdSum();
         if (recvSize != targetSum) {
-            PLMContext.d("UsbCommTask", recvSize + " <= received |||| target => " + targetSum);
+            PLMContext.d(TAG, recvSize + " <= received |||| target => " + targetSum);
         } else {
             for (Integer integer : map.keySet()) {
-                PLMContext.d("UsbCommTask", integer + " <= key |||| target => " + map.get(integer));
+                PLMContext.d(TAG, integer + " <= key |||| target => " + map.get(integer));
                 len += map.get(integer).getDataLen();
             }
             data = new byte[len];
@@ -137,7 +139,7 @@ public class CommandRxWrapper {
                 }
             }
         }
-        PLMContext.d("UsbCommTask", data.length + " <= data len |||| str content => " + new String(data));
+        PLMContext.d(TAG, " |= data len =>"+data.length + " <= data len =|");
     }
 
     public void clearCommands() {

@@ -36,6 +36,8 @@ public class CP210xView implements GlobalCommandReceiveListener {
             @Override
             public void actionPerformed(ActionEvent e) {
                 PLMContext.closeServer();
+                //退出应用
+                System.exit(0);
             }
         });
         btnSend.addActionListener(new ActionListener() {

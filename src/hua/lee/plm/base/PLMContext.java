@@ -45,7 +45,9 @@ public final class PLMContext {
     }
 
     public static void d(String tag, String msg) {
-        System.out.println(tag + " | " + msg);
+        if (tag.equals("CommandTxWrapper") || tag.equals("CommandRxWrapper")) {
+            System.out.println(tag + " | " + msg);
+        }
     }
 
     public static void initServer() {
