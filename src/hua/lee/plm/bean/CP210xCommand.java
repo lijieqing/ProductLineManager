@@ -206,7 +206,7 @@ public class CP210xCommand {
      * @return byte[] 数组
      */
     public byte[] toByteArray() {
-        int cmdLen = this.getDataLen() + 9;
+        int cmdLen = (this.getDataLen() & 0xff) + 9;
         byte[] send = new byte[cmdLen];
 
         send[0] = 0x79;
@@ -234,8 +234,8 @@ public class CP210xCommand {
                 ", cmdType=" + cmdType +
                 ", dataLen=" + dataLen +
                 ", data=" + Arrays.toString(data) +
-                ", cmdNum=" + cmdNum +
-                ", cmdSum=" + cmdSum +
+                ", cmdNum=" + (cmdNum & 0xff) +
+                ", cmdSum=" + (cmdSum & 0xff) +
                 '}';
     }
 }

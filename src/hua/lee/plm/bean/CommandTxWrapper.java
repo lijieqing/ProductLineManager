@@ -205,21 +205,23 @@ public class CommandTxWrapper {
         if (datas.length > 64) {
             int sum = datas.length / 64;
             int suffix = datas.length % 64;
-            if (suffix > 0) {
-                sum += 1;
-            }
             byte[] data;
             CP210xCommand cmd;
             int len;
             for (int i = 0; i < sum; i++) {
-                if (i < (sum - 1)) {
-                    len = 64;
-                } else {
-                    len = suffix;
-                }
+                len = 64;
                 data = new byte[len];
                 System.arraycopy(datas, i * 64, data, 0, len);
                 cmd = CP210xCommand.generateCommandBySource(data, (byte) i, (byte) sum, cmd_left, cmd_right);
+                cmdList.add(cmd);
+            }
+            if (suffix > 0) {
+                sum++;
+                int pos = cmdList.size();
+                len = suffix;
+                data = new byte[len];
+                System.arraycopy(datas, pos * 64, data, 0, len);
+                cmd = CP210xCommand.generateCommandBySource(data, (byte) pos, (byte) sum, cmd_left, cmd_right);
                 cmdList.add(cmd);
             }
 
