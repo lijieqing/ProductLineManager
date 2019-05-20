@@ -49,7 +49,9 @@ public class MacSplit {
 
         //macSplit();
 
-        generateMacTxt();
+        //generateMacTxt();
+
+        showMac_S_and_E("D0:D9:4F:EF:",0xe694,100);
     }
 
     private static void generateMacTxt() throws IOException {
@@ -71,5 +73,16 @@ public class MacSplit {
             data++;
         }
         //System.out.println(c);
+    }
+    private static void showMac_S_and_E(String prefix,int start,int len){
+        //D0:D9:4F:EF:E6:30
+        //D0:D9:4F:EF:FF:FF
+        start--;
+        for (int i = 0; i < len; i++) {
+            start++;
+            String val = Integer.toHexString(start).toUpperCase();
+            val = prefix+val.substring(0,2)+":"+val.substring(2,4);
+            System.out.println(val);
+        }
     }
 }

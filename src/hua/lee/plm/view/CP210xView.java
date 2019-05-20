@@ -4,6 +4,7 @@ import hua.lee.plm.base.GlobalCommandReceiveListener;
 import hua.lee.plm.base.PLMContext;
 import hua.lee.plm.bean.CommandRxWrapper;
 import hua.lee.plm.bean.CommandTxWrapper;
+import hua.lee.plm.test.CommandCollections;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -51,9 +52,9 @@ public class CP210xView implements GlobalCommandReceiveListener {
                 CommandTxWrapper tx = null;
                 if (stringType) {
                     if (fileType) {
-                        tx = CommandTxWrapper.initTX(cmd, data, null, CommandTxWrapper.DATA_FILE, PLMContext.TYPE_FUNC);
+                        tx = CommandTxWrapper.initTX(cmd, data, null, CommandTxWrapper.DATA_FILE, PLMContext.TYPE_CTL);
                     } else {
-                        tx = CommandTxWrapper.initTX(cmd, data, null, CommandTxWrapper.DATA_STRING, PLMContext.TYPE_FUNC);
+                        tx = CommandTxWrapper.initTX(cmd, data, null, CommandTxWrapper.DATA_STRING, PLMContext.TYPE_CTL);
                     }
                 } else {
 
@@ -74,6 +75,8 @@ public class CP210xView implements GlobalCommandReceiveListener {
     }
 
     public static void main(String[] args) {
+        CommandCollections commandCollections = new CommandCollections();
+        commandCollections.getCmdList();
         JFrame jFrame = new JFrame();
         CP210xView cp210xView = new CP210xView();
         cp210xView.init();

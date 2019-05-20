@@ -17,7 +17,7 @@ public class CP2102CommunicatePort extends CommunicatePort {
     public int readData(byte[] recvBuffer, int off, int len) {
         int val = -1;
         try {
-            val=  inputStream.read(recvBuffer, off, len);
+            val = inputStream.read(recvBuffer, off, len);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -45,10 +45,32 @@ public class CP2102CommunicatePort extends CommunicatePort {
         while (ports.hasMoreElements()) {
             CommPortIdentifier cp = (CommPortIdentifier) ports.nextElement();
             System.out.println(cp.getName() + " :::: " + cp.toString());
-            if (cp.getName().contains("tty.SLAB_USBtoUART")) {
+            if (cp.getName().contains("tty.usbserial-AL01WQAN")) {
                 try {
                     //mac 第一次运行程序，需建立/var/lock 文件夹
                     //并且设置权限 chmod go+rwx
+//                    CommPort commPort = cp.open("/dev/tty.SLAB_USBtoUART", 50);
+                    CommPort commPort = cp.open("/dev/tty.usbserial-AL01WQAN", 50);
+                    if (commPort instanceof SerialPort) {
+                        port = (SerialPort) commPort;
+                        port.setSerialPortParams(115200, SerialPort.DATABITS_8,
+                                SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
+                        inputStream = port.getInputStream();
+                        outputStream = port.getOutputStream();
+                    }
+
+                } catch (PortInUseException e) {
+                    e.printStackTrace();
+                    System.out.println(cp.getName() + " ::: init failed \n" + e.getMessage());
+                } catch (UnsupportedCommOperationException | IOException e) {
+                    e.printStackTrace();
+                }
+                break;
+            } else if (cp.getName().contains("tty.SLAB_USBtoUART")) {
+                try {
+                    //mac 第一次运行程序，需建立/var/lock 文件夹
+                    //并且设置权限 chmod go+rwx
+//                    CommPort commPort = cp.open("/dev/tty.SLAB_USBtoUART", 50);
                     CommPort commPort = cp.open("/dev/tty.SLAB_USBtoUART", 50);
                     if (commPort instanceof SerialPort) {
                         port = (SerialPort) commPort;
