@@ -87,7 +87,7 @@ public class CP210xProtocolTask extends Thread {
         //判断 cmd ID 是否一致
         if (wrapper.getCmdID().equals(command.getCommandID())) {
             //如果是最后一帧，接收完毕
-            if ((command.getCmdNum() & 0xff + 1) == (command.getCmdSum() & 0xff)) {
+            if ((command.getCmdNum() + 1) == (command.getCmdSum())) {
                 wrapper.addCommand(command);
                 wrapper.received();
             } else {
@@ -101,7 +101,7 @@ public class CP210xProtocolTask extends Thread {
             wrapper.setCmdID(command.getCommandID());
 
             //如果是最后一帧，或者只有一帧，接收完毕
-            if ((command.getCmdNum() & 0xff + 1) == (command.getCmdSum() & 0xff)) {
+            if ((command.getCmdNum() + 1) == (command.getCmdSum())) {
                 wrapper.addCommand(command);
                 wrapper.received();
             } else {

@@ -164,12 +164,12 @@ public class CP210xCommand {
         this.cmdSum = cmdSum;
     }
 
-    public byte getCmdNum() {
-        return cmdNum;
+    public int getCmdNum() {
+        return cmdNum & 0xff;
     }
 
-    public byte getCmdSum() {
-        return cmdSum;
+    public int getCmdSum() {
+        return cmdSum & 0xff;
     }
 
     public byte getCmdID_Left() {
@@ -218,8 +218,8 @@ public class CP210xCommand {
         if (this.getDataLen() > 0) {
             System.arraycopy(this.getData(), 0, send, 5, this.getDataLen());
         }
-        send[cmdLen - 4] = this.getCmdNum();
-        send[cmdLen - 3] = this.getCmdSum();
+        send[cmdLen - 4] = (byte) this.getCmdNum();
+        send[cmdLen - 3] = (byte) this.getCmdSum();
         send[cmdLen - 2] = calCRC(send);
         send[cmdLen - 1] = (byte) 0xFE;
 

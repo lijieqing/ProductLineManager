@@ -112,11 +112,11 @@ public class CommandRxWrapper {
         int len = 0;
         Map<Integer, CP210xCommand> map = new HashMap<>();
         for (CP210xCommand command : cmdList) {
-            map.put(command.getCmdNum() & 0xff, command);
+            map.put(command.getCmdNum(), command);
         }
         //判断接受帧数与数据帧数是否一致
         int recvSize = map.keySet().size();
-        int targetSum = cmdList.get(0).getCmdSum() & 0xff;
+        int targetSum = cmdList.get(0).getCmdSum();
         if (recvSize != targetSum) {
             PLMContext.d(TAG, recvSize + " <= received |||| target => " + targetSum);
         } else {

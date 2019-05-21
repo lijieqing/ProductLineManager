@@ -203,8 +203,14 @@ public class CommandTxWrapper {
      */
     private void bytesSplit(byte[] datas) {
         if (datas.length > 64) {
+            int frameNum = 0;
             int sum = datas.length / 64;
             int suffix = datas.length % 64;
+            if (suffix > 0) {
+                frameNum = sum + 1;
+            } else {
+                frameNum = sum;
+            }
             byte[] data;
             CP210xCommand cmd;
             int len;
@@ -212,16 +218,15 @@ public class CommandTxWrapper {
                 len = 64;
                 data = new byte[len];
                 System.arraycopy(datas, i * 64, data, 0, len);
-                cmd = CP210xCommand.generateCommandBySource(data, (byte) i, (byte) sum, cmd_left, cmd_right);
+                cmd = CP210xCommand.generateCommandBySource(data, (byte) i, (byte) frameNum, cmd_left, cmd_right);
                 cmdList.add(cmd);
             }
             if (suffix > 0) {
-                sum++;
                 int pos = cmdList.size();
                 len = suffix;
                 data = new byte[len];
                 System.arraycopy(datas, pos * 64, data, 0, len);
-                cmd = CP210xCommand.generateCommandBySource(data, (byte) pos, (byte) sum, cmd_left, cmd_right);
+                cmd = CP210xCommand.generateCommandBySource(data, (byte) pos, (byte) frameNum, cmd_left, cmd_right);
                 cmdList.add(cmd);
             }
 
