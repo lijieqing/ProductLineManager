@@ -80,10 +80,11 @@ public class CP210xCommand {
      * generate ACK CMD
      *
      * @param isAck true is ack,false is n-ack
-     * @param cmdID command id
+     * @param cmd   command id
      * @return command
      */
-    public static CP210xCommand generateACKCMD(boolean isAck, String cmdID) {
+    public static CP210xCommand generateACKCMD(boolean isAck, CP210xCommand cmd) {
+        String cmdID = cmd.getCommandID();
         if (cmdID.length() != 4) {
             if (cmdID.length() < 4) {
                 int add = 4 - cmdID.length();
@@ -109,8 +110,8 @@ public class CP210xCommand {
         ack[2] = cmd_left;
         ack[3] = cmd_right;
         ack[4] = 0x00;
-        ack[5] = 0x00;
-        ack[6] = 0x01;
+        ack[5] = cmd.cmdNum;
+        ack[6] = cmd.cmdSum;
         ack[7] = calCRC(ack);
         ack[8] = (byte) 0xFE;
         return new CP210xCommand(ack);

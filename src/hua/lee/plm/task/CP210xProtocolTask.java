@@ -66,7 +66,7 @@ public class CP210xProtocolTask extends Thread {
      */
     private void sendACK(@NotNull CP210xCommand cmd) {
         PLMContext.d(TAG, "UsbProtocolTask  send ACK back ");
-        CP210xCommand ack = CP210xCommand.generateACKCMD(true, cmd.getCommandID());
+        CP210xCommand ack = CP210xCommand.generateACKCMD(true, cmd);
         cp210xTxQueue.add(ack);
     }
 

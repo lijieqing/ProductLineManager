@@ -154,7 +154,9 @@ public class CommandTxWrapper {
                             } else {
                                 //有多帧数据，只发一次
                                 CP210xCommand ack = PLMContext.ackMap.get(cmd.getCommandID());
-                                if (ack != null) {
+                                if (ack != null
+                                        && ack.getCmdNum() == cmd.getCmdNum()
+                                        && ack.getCmdSum() == cmd.getCmdSum()) {
                                     PLMContext.ackMap.remove(cmd.getCommandID());
                                 } else {
                                     break;
