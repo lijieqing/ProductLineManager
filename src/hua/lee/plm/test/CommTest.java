@@ -2,12 +2,6 @@ package hua.lee.plm.test;
 
 import hua.lee.plm.base.PLMContext;
 import hua.lee.plm.bean.CommandTxWrapper;
-import hua.lee.plm.task.CP210xCommTask;
-import hua.lee.plm.task.CP210xProtocolTask;
-
-import java.util.concurrent.ArrayBlockingQueue;
-
-import static hua.lee.plm.base.PLMContext.*;
 
 /**
  * 通讯测试
@@ -18,7 +12,7 @@ import static hua.lee.plm.base.PLMContext.*;
 public class CommTest {
 
     public static void main(String[] args) {
-        initServer();
+//        initServer();
 
 //        writeKey();
 //        activeKey();
@@ -26,7 +20,15 @@ public class CommTest {
 //        switchSources();
 //        readIP();
 
-        readNode();
+//        readNode();
+
+        byte a = 28;
+        byte b = 68;
+
+        System.out.println(a * 256 + b);
+
+        //标准是>=4800
+
     }
 
     private static void readNode() {
@@ -53,7 +55,7 @@ public class CommTest {
     }
 
 
-    private static void writeKey(){
+    private static void writeKey() {
         PLMContext.sleep(3 * 1000);
         CommandTxWrapper txWrapper = CommandTxWrapper.initTX("1408",
                 "/Users/lijie/Desktop/hk14.bin", null,
@@ -68,14 +70,16 @@ public class CommTest {
 
         txWrapper.send();
     }
-    private static void activeKey(){
+
+    private static void activeKey() {
         PLMContext.sleep(3 * 1000);
         CommandTxWrapper txWrapper = CommandTxWrapper.initTX("140F",
                 "", null,
                 CommandTxWrapper.DATA_STRING, PLMContext.TYPE_CTL);
         txWrapper.send();
     }
-    private static void readIP(){
+
+    private static void readIP() {
         PLMContext.sleep(3 * 1000);
         CommandTxWrapper txWrapper = CommandTxWrapper.initTX("142c",
                 "0", null,
