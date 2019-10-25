@@ -22,12 +22,18 @@ public class CommTest {
 
 //        readNode();
 
-        byte a = 28;
-        byte b = 68;
-
-        System.out.println(a * 256 + b);
+//        byte a = 28;
+//        byte b = 68;
+//
+//        System.out.println(a * 256 + b);
 
         //标准是>=4800
+
+        String mac = "08:EB:29:CE:9F:C6";
+
+        if (mac.matches("^[0-9A-Z]{2}:[0-9A-Z]{2}:[0-9A-Z]{2}:[0-9A-Z]{2}:[0-9A-Z]{2}:[0-9A-Z]{2}$")) {
+            System.out.println(mac);
+        }
 
     }
 

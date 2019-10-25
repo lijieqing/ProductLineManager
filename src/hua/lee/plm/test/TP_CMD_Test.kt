@@ -20,36 +20,6 @@ class TP_CMD_Test : GlobalCommandReceiveListener {
 
     companion object {
         var RECEIVED = false;
-        //        const val CMD_LIST: String =
-//                "CMD=1470,FUNC=W\n" +
-//                        "CMD=1471,FUNC=R\n" +
-//                        "CMD=1474,FUNC=W\n" +
-//                        "CMD=1475,FUNC=R\n" +
-//                        "CMD=14A1,FUNC=W\n" +
-//                        "CMD=14A2,FUNC=R\n" +
-//                        "CMD=1472,FUNC=W\n" +
-//                        "CMD=1473,FUNC=R\n" +
-//                        "CMD=1476,FUNC=W\n" +
-//                        "CMD=1477,FUNC=R\n" +
-//                        "CMD=1478,FUNC=W\n" +
-//                        "CMD=1479,FUNC=R\n" +
-//                        "CMD=147A,FUNC=W\n" +
-//                        "CMD=147B,FUNC=R\n" +
-//                        "CMD=1409,FUNC=R\n" +
-//                        "CMD=1411,FUNC=R\n" +
-//                        "CMD=1457,FUNC=R\n" +
-//                        "CMD=1456,FUNC=R\n" +
-//                        "CMD=1272,FUNC=W\n" +
-//                        "CMD=1463,FUNC=R\n" +
-//                        "CMD=1139,FUNC=R\n" +
-//                        "CMD=14B0,FUNC=R\n" +
-//                        "CMD=14B1,FUNC=R\n" +
-//                        "CMD=14B2,FUNC=R\n" +
-//                        "CMD=14b6,FUNC=W\n" +
-//                        "CMD=1416,FUNC=R\n" +
-//                        "CMD=1418,FUNC=R\n" +
-//                        "CMD=14B4,FUNC=R\n" +
-//                        "CMD=14B9,FUNC=R"
         const val CMD_LIST: String =
                 "CMD=1409,FUNC=R\n" +
                         "CMD=1411,FUNC=R"
@@ -57,14 +27,14 @@ class TP_CMD_Test : GlobalCommandReceiveListener {
 }
 
 fun main() {
-    var count = 0
-    while (count < 1) {
-        PLMContext.initServer()
-        CommandRxWrapper.addGlobalRXListener(TP_CMD_Test())
-        strParse()
-        count++
-    }
-
+//    var count = 0
+//    while (count < 1) {
+//        PLMContext.initServer()
+//        CommandRxWrapper.addGlobalRXListener(TP_CMD_Test())
+//        strParse()
+//        count++
+//    }
+    strSplit("1112/")
 }
 
 fun strParse() {
@@ -87,6 +57,17 @@ fun strParse() {
 
         while (TP_CMD_Test.RECEIVED) {
 
+        }
+    }
+}
+
+fun strSplit(cmd: String) {
+    val cmdInfo = cmd.split("/")
+    if (cmdInfo.isNotEmpty()) {
+        if (cmdInfo.size == 1 && cmdInfo[0].isNotEmpty()) {
+            print("auto Run cmd id=${cmdInfo[0]}")
+        } else if (cmdInfo.size == 2 && cmdInfo[0].isNotEmpty()) {
+            print("auto Run cmd id=${cmdInfo[0]}, param=${cmdInfo[1]}")
         }
     }
 }
