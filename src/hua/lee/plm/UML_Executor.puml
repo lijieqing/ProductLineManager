@@ -1,0 +1,105 @@
+@startuml
+interface Executor{
+    +void execute(Runnable command);
+}
+interface ExecutorService{
+    +void shutdown();
+    +List<Runnable> shutdownNow();
+    +boolean isShutdown();
+    +boolean isTerminated();
+    +boolean awaitTermination();
+    +Future<T> submit();
+    +List<Future<T>> invokeAll(..)
+    +T invokeAny(..)
+}
+
+abstract class AbstractExecutorService{
+    #RunnableFuture<T> newTaskFor(..)
+    +T invokeAny(..);
+    +List<Future<T>> invokeAll(..);
+    +Future<?> submit(..);
+}
+interface ScheduledExecutorService{
+    +ScheduledFuture<?> schedule(..);
+    +ScheduledFuture<?> scheduleAtFixedRate(..);
+    ScheduledFuture<?> scheduleWithFixedDelay(..);
+}
+class ThreadPoolExecutor{
+}
+class ScheduledThreadPoolExecutor{
+}
+
+Executor <|-- ExecutorService
+ExecutorService <|.. AbstractExecutorService
+ExecutorService <|-- ScheduledExecutorService
+AbstractExecutorService <|-- ThreadPoolExecutor
+ThreadPoolExecutor<|--ScheduledThreadPoolExecutor
+ScheduledExecutorService<|..ScheduledThreadPoolExecutor
+
+interface Runnable{
+    +abstract void run();
+}
+interface Future{
+    +boolean cancel(boolean mayInterruptIfRunning);
+    +boolean isCancelled();
+    +boolean isDone();
+    +V get();
+}
+interface RunnableFuture{
+    +void run();
+}
+class FutureTask{
+    #void done();
+    #boolean runAndReset();
+    #void set(V v);
+    #void setException(Throwable t);
+}
+abstract class ForkJoinTask implements Future{
+
+}
+
+class ForkJoinPool extends AbstractExecutorService{
+
+}
+Runnable <|-- RunnableFuture
+Future <|-- RunnableFuture
+RunnableFuture <|.. FutureTask
+ForkJoinTask <.. ForkJoinPool
+
+interface CompletionService{
+    +Future<V> submit(Callable<V> task);
+    +Future<V> take();
+    +Future<V> poll();
+}
+class ExecutorCompletionService{
+    -final AbstractExecutorService aes;
+    -final Executor executor;
+    -final BlockingQueue<Future<V>> completionQueue;
+}
+class QueueingFuture{
+    # void done() { completionQueue.add(task); }
+    - final Future<V> task;
+}
+CompletionService <|.. ExecutorCompletionService
+ExecutorCompletionService --> AbstractExecutorService
+ExecutorCompletionService --> Executor
+ExecutorCompletionService ..> QueueingFuture
+FutureTask <|-- QueueingFuture
+
+class Executors {
+    +static Callable<Object> callable(..)
+    +static Callable<T> privilegedCallable(..)
+    +static Callable<T> privilegedCallableUsingCurrentClassLoader();
+    +static ThreadFactory defaultThreadFactory();
+    +static ExecutorService newCachedThreadPool(..);
+    +static ExecutorService newFixedThreadPool(..);
+    +static ExecutorService newWorkStealingPool(..);
+    +static ExecutorService newFixedThreadPool(..);
+    +static ExecutorService newSingleThreadExecutor(..);
+    +static ScheduledExecutorService newScheduledThreadPool(..);
+    +static ExecutorService newSingleThreadExecutor(..);
+}
+
+ExecutorService <.. Executors
+ScheduledThreadPoolExecutor <-- Executors
+@enduml

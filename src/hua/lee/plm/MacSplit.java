@@ -56,7 +56,7 @@ public class MacSplit {
     }
 
     public static void main(String[] args) throws IOException {
-        macSplit(0x400000, 0x43FFFF);
+        macSplit(0x440000, 0x46FFFF);
     }
 
     private static void generateMacTxt(String name, String head, int start, int end) {
