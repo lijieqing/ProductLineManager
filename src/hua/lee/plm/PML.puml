@@ -1,0 +1,93 @@
+@startuml
+
+package "comm" #DDDDDD {
+    interface CommunicateInterf{
+        + boolean isRunning();
+        + boolean startComm();
+        + boolean endComm();
+    }
+    interface CameraCommInterf{
+        + boolean openCamera();
+        + boolean closeCamera();
+        + boolean capture(String fileName);
+    }
+    interface CL200CommInterf{
+        + String readData();
+        + void addCL200DataReceivedListener(CL200DataCallback callback);
+    }
+    interface DUTCommInterf{
+        + void sendCommand(Command cmd);
+        + void addOnCommandReceivedListener(DUTDataCallback dutCallback);
+    }
+    interface CL200DataCallback{
+        + void onDataReceived(CL200Data data);
+    }
+    interface DUTDataCallback{
+        + void onDataReceived(Command data);
+    }
+
+    CL200CommInterf ..> CL200DataCallback
+    DUTCommInterf ..> DUTDataCallback
+    CameraCommInterf --|> CommunicateInterf
+    CL200CommInterf --|> CommunicateInterf
+    DUTCommInterf --|> CommunicateInterf
+
+}
+
+package "control" #DDDDCC{
+     interface DeviceControl{
+         + void enable();
+         + void disable();
+         + boolean isConnected();
+     }
+     abstract class CameraControl implements DeviceControl{
+         - CameraCommInterf cameraComm;
+         + boolean openCam();
+         + boolean capture(String fileName);
+         + boolean closeCam();
+         + void setCameraComm(CameraCommInterf cameraComm);
+     }
+     abstract class CL200Control implements DeviceControl{
+         - CL200CommInterf cl200Comm;
+         + String readData();
+         + void setCL200Comm(CL200CommInterf cl200Comm);
+     }
+     abstract class DUTControl implements DeviceControl{
+         - DUTCommInterf dutComm;
+         + void writeGain(int type,int value);
+         + void writeOFF(int type,int value);
+         + int readGain(int type);
+         + int readOFF(int type);
+         + void openPattern(int r,int g,int b);
+         + void disablePattern();
+         + void setDUTComm(DUTCommInterf dutComm);
+     }
+
+     DUTControl --> DUTCommInterf
+     CL200Control --> CL200CommInterf
+     CameraControl --> CameraCommInterf
+
+}
+
+class DeviceControlManager{
+    + DeviceControlManager getInstance();
+    + DUTControl getDUTControl();
+    + CameraControl getCameraControl();
+    + CL200Control getCL200Control();
+    + DeviceControl getDeviceControl(class clazz);
+    - void initControls();
+}
+
+DeviceControlManager --> DeviceControl
+
+class PQService{
+
+}
+class BUService{
+
+}
+
+PQService --> DeviceControlManager
+BUService --> DeviceControlManager
+
+@enduml
