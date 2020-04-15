@@ -1,4 +1,4 @@
-package hua.lee.plm;
+package hua.lee.plm.fm;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -56,7 +56,7 @@ public class MacSplit {
     }
 
     public static void main(String[] args) throws IOException {
-        macSplit(0x440000, 0x46FFFF);
+        macSplit(0x4A3068, 0x4A6717);
     }
 
     private static void generateMacTxt(String name, String head, int start, int end) {
