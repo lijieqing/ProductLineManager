@@ -1,6 +1,7 @@
 package hua.lee.plm.fm;
 
 import hua.lee.plm.bean.PQData;
+import hua.lee.plm.utils.ThreadUtils;
 
 import java.io.*;
 import java.util.*;
@@ -26,7 +27,14 @@ public class PQParse {
 
         for (String pid : PIDs) {
             for (String dataPath : dataPaths) {
-                generatePQData(pid, dataPath);
+                ThreadUtils.runTaskOnBack(() -> {
+                    try {
+                        generatePQData(pid, dataPath);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        System.out.println("ops IO error");
+                    }
+                });
             }
         }
 
