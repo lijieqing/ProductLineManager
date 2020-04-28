@@ -21,6 +21,7 @@ public class PQData {
     private String WarmOffRed;
     private String WarmOffGreen;
     private String WarmOffBlue;
+    private String TimeStamp;
 
     public String getSN() {
         return SN;
@@ -29,6 +30,14 @@ public class PQData {
     public void setSN(String sn) {
         if (sn.contains("/")) sn = sn.replace("/", "");
         this.SN = sn;
+    }
+
+    public String getTimeStamp() {
+        return TimeStamp;
+    }
+
+    public void setTimeStamp(String timeStamp) {
+        TimeStamp = timeStamp;
     }
 
     public String getNormalGainRed() {
@@ -217,7 +226,7 @@ public class PQData {
                 NormalGainBlue + "," + CoolGainBlue + "," + WarmGainBlue + "," +
                 WarmOffRed + "," + WarmOffGreen + "," + WarmOffBlue + "," +
                 CoolOffRed + "," + CoolOffGreen + "," + CoolOffBlue + "," +
-                NormalOffRed + "," + NormalOffGreen + "," + NormalOffBlue + "\n";
+                NormalOffRed + "," + NormalOffGreen + "," + NormalOffBlue + "," + TimeStamp+ "\n";
     }
 
     public boolean containNull() {
@@ -239,6 +248,7 @@ public class PQData {
                 WarmOffRed == null ||
                 WarmOffGreen == null ||
                 WarmOffBlue == null ||
+                TimeStamp == null ||
                 SN == null || !SN.matches("[0-9]{13}")
         );
     }

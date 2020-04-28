@@ -45,57 +45,75 @@ public class PQParse {
         String value = parseData(data);
         if (data.contains("读取标准色温白平衡红色增益")) {
             pqData.setNormalGainRed(value);
+            pqData.setTimeStamp(parseTimeStamp(data));
         }
         if (data.contains("读取冷色色温白平衡红色增益")) {
             pqData.setCoolGainRed(value);
+            pqData.setTimeStamp(parseTimeStamp(data));
         }
         if (data.contains("读取暖色色温白平衡红色增益")) {
             pqData.setWarmGainRed(value);
+            pqData.setTimeStamp(parseTimeStamp(data));
         }
         if (data.contains("读取标准色温白平衡绿色增益")) {
             pqData.setNormalGainGreen(value);
+            pqData.setTimeStamp(parseTimeStamp(data));
         }
         if (data.contains("读取冷色色温白平衡绿色增益")) {
             pqData.setCoolGainGreen(value);
+            pqData.setTimeStamp(parseTimeStamp(data));
         }
         if (data.contains("读取暖色色温白平衡绿色增益")) {
             pqData.setWarmGainGreen(value);
+            pqData.setTimeStamp(parseTimeStamp(data));
         }
         if (data.contains("读取标准色温白平衡蓝色增益")) {
             pqData.setNormalGainBlue(value);
+            pqData.setTimeStamp(parseTimeStamp(data));
         }
         if (data.contains("读取冷色色温白平衡蓝色增益")) {
             pqData.setCoolGainBlue(value);
+            pqData.setTimeStamp(parseTimeStamp(data));
         }
         if (data.contains("读取暖色色温白平衡蓝色增益")) {
             pqData.setWarmGainBlue(value);
+            pqData.setTimeStamp(parseTimeStamp(data));
         }
         if (data.contains("读取标准色温白平衡红色偏移")) {
             pqData.setNormalOffRed(value);
+            pqData.setTimeStamp(parseTimeStamp(data));
         }
         if (data.contains("读取冷色色温白平衡红色偏移")) {
             pqData.setCoolOffRed(value);
+            pqData.setTimeStamp(parseTimeStamp(data));
         }
         if (data.contains("读取暖色色温白平衡红色偏移")) {
             pqData.setWarmOffRed(value);
+            pqData.setTimeStamp(parseTimeStamp(data));
         }
         if (data.contains("读取标准色温白平衡绿色偏移")) {
             pqData.setNormalOffGreen(value);
+            pqData.setTimeStamp(parseTimeStamp(data));
         }
         if (data.contains("读取冷色色温白平衡绿色偏移")) {
             pqData.setCoolOffGreen(value);
+            pqData.setTimeStamp(parseTimeStamp(data));
         }
         if (data.contains("读取暖色色温白平衡绿色偏移")) {
             pqData.setWarmOffGreen(value);
+            pqData.setTimeStamp(parseTimeStamp(data));
         }
         if (data.contains("读取标准色温白平衡蓝色偏移")) {
             pqData.setNormalOffBlue(value);
+            pqData.setTimeStamp(parseTimeStamp(data));
         }
         if (data.contains("读取冷色色温白平衡蓝色偏移")) {
             pqData.setCoolOffBlue(value);
+            pqData.setTimeStamp(parseTimeStamp(data));
         }
         if (data.contains("读取暖色色温白平衡蓝色偏移")) {
             pqData.setWarmOffBlue(value);
+            pqData.setTimeStamp(parseTimeStamp(data));
         }
     }
 
@@ -105,20 +123,28 @@ public class PQParse {
         }
         String res = data.substring(69, 73);
         if (res.contains("\"")) res = res.replace("\"", "");
-        System.out.println("parse data " + res);
+        //System.out.println("parse data " + res);
+        return res;
+    }
+    private static String parseTimeStamp(String data){
+        if (data.length() < 96) {
+            return null;
+        }
+        String res = data.substring(76, 94);
+        if (res.contains("\"")) res = res.replace("\"", "");
+        //System.out.println("parse data " + res);
         return res;
     }
 
     private static void generatePQData(String PID, String dataPath) throws IOException {
         List<String> snList = new ArrayList<>();
-        File file = new File("/Users/lijie/Desktop/pq/PID-" + PID + "-" + new Date() + ".csv");
-        //File file = new File("/Users/lijie/Desktop/pq/FM05501.csv");
+        File file = new File("/Users/lijie/Desktop/pq/PID-" + PID + "-" + new Date()+"-"+System.currentTimeMillis() + ".csv");
         if (!file.exists()) {
             file.createNewFile();
         }
         BufferedWriter writer = new BufferedWriter(new FileWriter(file));
         //写入 CSV 标题
-        writer.append("SN,N_RGain,C_RGain,W_RGain,N_GGain,C_GGain,W_GGain,N_BGain,C_BGain,W_BGain,W_ROffset,W_GOffset,W_BOffset,C_ROffset,C_GOffset,C_BOffset,N_ROffset,N_GOffset,N_BOffset\n");
+        writer.append("SN,N_RGain,C_RGain,W_RGain,N_GGain,C_GGain,W_GGain,N_BGain,C_BGain,W_BGain,W_ROffset,W_GOffset,W_BOffset,C_ROffset,C_GOffset,C_BOffset,N_ROffset,N_GOffset,N_BOffset,TimeStamp\n");
 
 
         String data;
