@@ -7,6 +7,7 @@ public final class ThreadUtils {
     }
 
     private static final ExecutorService executor = Executors.newCachedThreadPool(new FengThreadFactory());
+    private static final CompletionService<String[]> completionService = new ExecutorCompletionService<>(executor);
 
     public static void runTaskOnBack(Runnable r) {
         executor.execute(r);
@@ -23,7 +24,12 @@ public final class ThreadUtils {
     public static Future<Integer> runIntTask(Callable<Integer> callable) {
         return executor.submit(callable);
     }
-
+    public static void runCompletionTask(Callable<String[]> callable){
+        completionService.submit(callable);
+    }
+    public static CompletionService<String[]> getCompletionService(){
+        return completionService;
+    }
     private static class FengThreadFactory implements ThreadFactory {
         @Override
         public Thread newThread(Runnable r) {

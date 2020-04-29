@@ -4,10 +4,45 @@ import hua.lee.plm.bean.PQData;
 import hua.lee.plm.utils.ThreadUtils;
 
 import java.io.*;
+import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 public class PQParse {
-    public static void main(String[] args) throws IOException {
+    private static Map<String, List<String>> mapPidPath;
+    private static int taskSize = 0;
+    private static CountDownLatch latch;
+
+    public static void main(String[] args) throws Exception {
+        mapPidPath = new HashMap<>();
+        //step 1
+        ParseLog();
+
+        //step 2
+        FinalCSV();
+
+    }
+
+    private static void ClearMiddle() {
+        for (List<String> values : mapPidPath.values()) {
+            for (String value : values) {
+                File file = new File(value);
+                if (file.exists()){
+                    file.delete();
+                }
+            }
+        }
+    }
+
+    /**
+     * STEP 1
+     * Factory Log Parse,and generate CSV middle files
+     * CSV middle file may contents the same SN,so we need STEP2
+     */
+    private static void ParseLog() throws InterruptedException {
         String[] PIDs = new String[]{
                 "18301",
                 "19301",
@@ -22,22 +57,91 @@ public class PQParse {
         };
         List<String> dataPaths = new ArrayList<>();
         for (int i = 1; i < 13; i++) {
-            dataPaths.add("/Users/lijie/Desktop/testlog/testlog" + i + ".txt");
+            dataPaths.add("/home/lee/文档/testlog/testlog" + i + ".txt");
         }
+        taskSize = PIDs.length * dataPaths.size();
 
+        latch = new CountDownLatch(taskSize);
+        int trueCount = 0;
         for (String pid : PIDs) {
             for (String dataPath : dataPaths) {
-                ThreadUtils.runTaskOnBack(() -> {
-                    try {
-                        generatePQData(pid, dataPath);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        System.out.println("ops IO error");
+                trueCount++;
+                ThreadUtils.runCompletionTask(new Callable<String[]>() {
+                    @Override
+                    public String[] call() throws Exception {
+                        String[] res = null;
+                        try {
+                            res = generatePQData(pid, dataPath);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            System.out.println("ops IO error");
+                        }finally {
+                            latch.countDown();
+                        }
+                        return res;
                     }
                 });
             }
         }
+        System.out.println("total Task Size = " + taskSize);
+        System.out.println("true Task Count = " + trueCount);
+        latch.await();
+    }
 
+    private static void FinalCSV() throws InterruptedException, ExecutionException {
+        for (int i = 0; i < taskSize; i++) {
+            Future<String[]> task = ThreadUtils.getCompletionService().take();
+            String[] res = task.get();
+            System.out.println("FinalCSV task Get = "+ Arrays.toString(res));
+            if (mapPidPath.containsKey(res[0])) {
+                mapPidPath.get(res[0]).add(res[1]);
+            } else {
+                List<String> list = new ArrayList<>();
+                list.add(res[1]);
+                mapPidPath.put(res[0], list);
+            }
+        }
+        ThreadUtils.runTaskOnBack(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    for (String key : mapPidPath.keySet()) {
+                        List<String> filePaths = mapPidPath.get(key);
+                        //parse CSV middle file,可能存在重复的 SN
+                        Map<String, PQData> result = new HashMap<>();
+                        for (String filePath : filePaths) {
+                            BufferedReader reader = new BufferedReader(new FileReader(filePath));
+                            try {
+                                String data;
+                                while ((data = reader.readLine()) != null) {
+                                    parseCSV(result, data);
+                                }
+                            } finally {
+                                reader.close();
+                            }
+                        }
+                        // finally out final CSV final
+                        File file = new File("/home/lee/文档/out/Final-" + key + "-" + new Date() + ".csv");
+                        if (!file.exists()) {
+                            file.createNewFile();
+                        }
+                        BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+                        System.out.println("total data is " + result.values().size());
+                        //写入 CSV 标题
+                        writer.append("SN,N_RGain,C_RGain,W_RGain,N_GGain,C_GGain,W_GGain,N_BGain,C_BGain,W_BGain,W_ROffset,W_GOffset,W_BOffset,C_ROffset,C_GOffset,C_BOffset,N_ROffset,N_GOffset,N_BOffset,TimeStamp\n");
+                        for (PQData value : result.values()) {
+                            writer.write(value.toCSVNew());
+                        }
+                        writer.flush();
+                        writer.close();
+                    }
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        });
     }
 
 
@@ -118,15 +222,18 @@ public class PQParse {
     }
 
     private static String parseData(String data) {
-        if (data.length() < 75) {
-            return null;
+        String[] logs = data.split("\t");
+        String res = null;
+        //String res = data.substring(69, 73);
+        if (logs.length > 6){
+            res = logs[6];
+            if (res.contains("\"")) res = res.replace("\"", "");
+            //System.out.println("parse data " + res);
         }
-        String res = data.substring(69, 73);
-        if (res.contains("\"")) res = res.replace("\"", "");
-        //System.out.println("parse data " + res);
         return res;
     }
-    private static String parseTimeStamp(String data){
+
+    private static String parseTimeStamp(String data) {
         if (data.length() < 96) {
             return null;
         }
@@ -136,16 +243,14 @@ public class PQParse {
         return res;
     }
 
-    private static void generatePQData(String PID, String dataPath) throws IOException {
+    private static String[] generatePQData(String PID, String dataPath) throws IOException {
         List<String> snList = new ArrayList<>();
-        File file = new File("/Users/lijie/Desktop/pq/PID-" + PID + "-" + new Date()+"-"+System.currentTimeMillis() + ".csv");
+        String filePath = "/home/lee/文档/out/PID-" + PID + "-" + new Date() + "-" + System.currentTimeMillis() + ".csv";
+        File file = new File(filePath);
         if (!file.exists()) {
             file.createNewFile();
         }
         BufferedWriter writer = new BufferedWriter(new FileWriter(file));
-        //写入 CSV 标题
-        writer.append("SN,N_RGain,C_RGain,W_RGain,N_GGain,C_GGain,W_GGain,N_BGain,C_BGain,W_BGain,W_ROffset,W_GOffset,W_BOffset,C_ROffset,C_GOffset,C_BOffset,N_ROffset,N_GOffset,N_BOffset,TimeStamp\n");
-
 
         String data;
         String oldSN = null;
@@ -156,7 +261,11 @@ public class PQParse {
         //异常原因是因为 SN 数据不连贯
         BufferedReader reader = new BufferedReader(new FileReader(dataPath));
         while ((data = reader.readLine()) != null) {
+            String[] logs = data.split("\t");
             String sn = data.substring(12, 26);
+            if (logs.length > 2) {
+                sn = logs[1].replace("\"","");
+            }
             if (oldSN == null || !oldSN.equals(sn)) {
                 if (pqData != null && !snList.contains(pqData.getSN())) {
                     if (pqData.containNull()) {
@@ -170,15 +279,15 @@ public class PQParse {
                     }
 
                 }
-                System.out.println("new SN,we create new File");
+                //System.out.println("new SN,we create new PQData");
                 pqData = new PQData();
                 pqData.setSN(sn);
             } else {
-                System.out.println("old sn " + sn);
+                //System.out.println("old sn " + sn);
             }
             pqDataParse(pqData, data);
             oldSN = sn;
-            System.out.println(pqData.toString());
+            //System.out.println(pqData.toString());
         }
         reader.close();
 
@@ -197,8 +306,11 @@ public class PQParse {
         reader = new BufferedReader(new FileReader(dataPath));
         while ((data = reader.readLine()) != null) {
             for (String sn : invalidCount) {
+                if (!sn.matches("[0-9]{13}")){
+                    continue;
+                }
                 if (data.contains(sn.substring(5))) {
-                    System.out.println("find fixed Data");
+                    //System.out.println("find fixed Data");
                     PQData temp = fixedMap.get(sn);
                     if (temp != null) {
                         pqDataParse(temp, data);
@@ -217,5 +329,40 @@ public class PQParse {
 
         reader.close();
         writer.flush();
+        writer.close();
+
+        return new String[]{PID, filePath};
+    }
+
+    private static void parseCSV(Map<String, PQData> result, String data) {
+        String[] params = data.split(",");
+        if (params.length != 20) {
+            System.out.println("PQ data is illegal content=" + Arrays.toString(params));
+            System.out.println("PQ data len is illegal " + params.length);
+            return;
+        }
+        if (result.containsKey(params[0])) {
+            String oldTime = result.get(params[0]).getTimeStamp();
+            SimpleDateFormat sdf = new SimpleDateFormat();
+            try {
+                Date oldD = new Date(oldTime);
+                Date newD = new Date(params[19]);
+                if (oldD.before(newD)) {
+                    result.get(params[0]).setTimeStamp(params[19]);
+                }
+            }catch (IllegalArgumentException e){
+                e.printStackTrace();
+                result.get(params[0]).setTimeStamp(params[19]);
+            }
+
+
+        } else {
+            PQData pd = new PQData(
+                    params[0], params[1], params[2], params[3], params[4], params[5], params[6], params[7],
+                    params[8], params[9], params[10], params[11], params[12], params[13], params[14], params[15],
+                    params[16], params[17], params[18], params[19]
+            );
+            result.put(params[0], pd);
+        }
     }
 }

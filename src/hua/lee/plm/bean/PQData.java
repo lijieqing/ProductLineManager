@@ -23,6 +23,32 @@ public class PQData {
     private String WarmOffBlue;
     private String TimeStamp;
 
+    public PQData(String SN, String normalGainRed, String normalGainGreen, String normalGainBlue, String coolGainRed, String coolGainGreen, String coolGainBlue, String warmGainRed, String warmGainGreen, String warmGainBlue, String normalOffRed, String normalOffGreen, String normalOffBlue, String coolOffRed, String coolOffGreen, String coolOffBlue, String warmOffRed, String warmOffGreen, String warmOffBlue, String timeStamp) {
+        this.SN = SN;
+        NormalGainRed = normalGainRed;
+        NormalGainGreen = normalGainGreen;
+        NormalGainBlue = normalGainBlue;
+        CoolGainRed = coolGainRed;
+        CoolGainGreen = coolGainGreen;
+        CoolGainBlue = coolGainBlue;
+        WarmGainRed = warmGainRed;
+        WarmGainGreen = warmGainGreen;
+        WarmGainBlue = warmGainBlue;
+        NormalOffRed = normalOffRed;
+        NormalOffGreen = normalOffGreen;
+        NormalOffBlue = normalOffBlue;
+        CoolOffRed = coolOffRed;
+        CoolOffGreen = coolOffGreen;
+        CoolOffBlue = coolOffBlue;
+        WarmOffRed = warmOffRed;
+        WarmOffGreen = warmOffGreen;
+        WarmOffBlue = warmOffBlue;
+        TimeStamp = timeStamp;
+    }
+
+    public PQData() {
+    }
+
     public String getSN() {
         return SN;
     }

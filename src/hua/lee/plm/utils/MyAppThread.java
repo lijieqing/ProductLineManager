@@ -19,7 +19,8 @@ public class MyAppThread extends Thread {
 
             @Override
             public void uncaughtException(Thread t, Throwable e) {
-                System.out.println("uncaught in thread " + t.getName() + "\n" + e.getMessage());
+                System.out.println("uncaught in thread " + t.getName() + "\n" +e.getMessage());
+                e.printStackTrace();
             }
         });
     }
