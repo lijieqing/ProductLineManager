@@ -24,8 +24,6 @@ public class PQParse {
 
         //step 2
         FinalCSV();
-
-        System.out.println(new Date());
     }
 
 
@@ -48,8 +46,8 @@ public class PQParse {
                 "27858",
         };
         List<String> dataPaths = new ArrayList<>();
-        for (int i = 1; i < 13; i++) {
-            dataPaths.add("/home/lee/文档/testlog/testlog" + i + ".txt");
+        for (int i = 1; i < 15; i++) {
+            dataPaths.add("/home/lee/文档/test_log/TEST2_" + i + ".txt");
         }
         taskSize = PIDs.length * dataPaths.size();
 
@@ -228,6 +226,8 @@ public class PQParse {
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
+                }finally {
+                    System.out.println(new Date());
                 }
 
             }

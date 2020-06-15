@@ -247,12 +247,12 @@ public class PQData {
 
     public String toCSVNew() {
         return SN + "," +
-                NormalGainRed + "," + CoolGainRed + "," + WarmGainRed + "," +
-                NormalGainGreen + "," + CoolGainGreen + "," + WarmGainGreen + "," +
-                NormalGainBlue + "," + CoolGainBlue + "," + WarmGainBlue + "," +
-                WarmOffRed + "," + WarmOffGreen + "," + WarmOffBlue + "," +
-                CoolOffRed + "," + CoolOffGreen + "," + CoolOffBlue + "," +
-                NormalOffRed + "," + NormalOffGreen + "," + NormalOffBlue + "," + TimeStamp+ "\n";
+                dataCheck(NormalGainRed) + "," + dataCheck(CoolGainRed) + "," + dataCheck(WarmGainRed) + "," +
+                dataCheck(NormalGainGreen) + "," + dataCheck(CoolGainGreen) + "," + dataCheck(WarmGainGreen) + "," +
+                dataCheck(NormalGainBlue) + "," + dataCheck(CoolGainBlue) + "," + dataCheck(WarmGainBlue) + "," +
+                dataCheck(WarmOffRed) + "," + dataCheck(WarmOffGreen) + "," + dataCheck(WarmOffBlue) + "," +
+                dataCheck(CoolOffRed) + "," + dataCheck(CoolOffGreen) + "," + dataCheck(CoolOffBlue) + "," +
+                dataCheck(NormalOffRed) + "," + dataCheck(NormalOffGreen) + "," + dataCheck(NormalOffBlue) + "," + TimeStamp+ "\n";
     }
 
     public boolean containNull() {
@@ -277,5 +277,19 @@ public class PQData {
                 TimeStamp == null ||
                 SN == null || !SN.matches("[0-9]{13}")
         );
+    }
+    private String dataCheck(String field){
+        if (field.startsWith("3")){
+            int len = field.length();
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < len; i++) {
+                if (i%2 == 1){
+                    sb.append(field.charAt(i));
+                }
+            }
+            return  sb.toString();
+        }else {
+            return field;
+        }
     }
 }
