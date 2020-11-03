@@ -9,7 +9,8 @@ public class RGBParse {
     private static void parseAbnormalTempLogic(String logic) {
         String[] logs = logic.split(";");
         for (String log : logs) {
-            if (!log.matches("[RGBP]{1,2}[-+*/][RGBP]{1,2}[><][0-9]{1,2}")) {
+            if (!log.matches("[RGBP]{1,2}[-+*/][RGBP]{1,2}[><][0-9]+")) {
+                System.out.println("illegal logic");
                 return;
             }
         }
@@ -31,7 +32,7 @@ public class RGBParse {
                 break;
             }
         }
-        if (ari == null){
+        if (ari == null) {
             System.out.println("非法字符");
             return null;
         }
@@ -94,6 +95,6 @@ public class RGBParse {
     }
 
     public static void main(String[] args) {
-        parseAbnormalTempLogic(method);
+        parseAbnormalTempLogic("R+BP>10000");
     }
 }

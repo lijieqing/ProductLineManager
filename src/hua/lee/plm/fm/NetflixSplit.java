@@ -10,7 +10,7 @@ import java.io.*;
  **/
 public class NetflixSplit {
     public static void main(String[] args) throws IOException {
-        File file = new File("/Users/lijie/Desktop/1500_156MGN.txt");
+        File file = new File("/Users/lijie/Desktop/NFANDROID2-PRV-EVA-MGK0000000000000000070000.csv");
         FileReader fr = new FileReader(file);
         BufferedReader reader = new BufferedReader(fr);
         String key;
